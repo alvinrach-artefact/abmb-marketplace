@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Agent Kevin</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="page">
+
+  <p><a href="index.html" class="btn-secondary" style="text-decoration:none;">← Back to registry</a></p>
+
+  <div class="detail-header">
+    <h1>Agent Kevin</h1>
+  </div>
+  <div class="meta-row">
+    <span><b>Owner:</b> SME Banking</span>
+    <span><b>Audience:</b> Relationship Managers</span>
+    <span><b>Classification:</b> <span class="badge confidential">Confidential</span></span>
+    <span><b>Status:</b> <span class="badge pilot">Pilot</span></span>
+  </div>
+  <p class="lede">Agent Kevin helps SME relationship managers with case preparation, credit readiness, and draft memo support. It brings together relevant data, guidelines and templates to accelerate high-quality SME credit discussions and documentation.</p>
+
+  <dl class="fact-grid card">
+    <dt>Purpose</dt><dd>Support SME credit analysis and relationship management, including case preparation, credit readiness assessment, and generation of draft memos.</dd>
+    <dt>Primary Users</dt><dd>SME Relationship Managers</dd>
+    <dt>Department</dt><dd>Business Banking</dd>
+    <dt>Version</dt><dd>v2.3</dd>
+    <dt>Last Updated</dt><dd>12 Sep 2026</dd>
+  </dl>
+
+  <section class="block">
+    <h2>Agent workflow</h2>
+    <div class="workflow card">
+      <div class="wf-step"><div class="num">01</div><h4>User request</h4><p>SME RM asks a question or uploads documents</p></div>
+      <div class="wf-step"><div class="num">02</div><h4>Orchestrator</h4><p>Understands intent, plans workflow and calls relevant tools</p></div>
+      <div class="wf-step"><div class="num">03</div><h4>Data retrieval</h4><p>Fetches data from approved sources</p></div>
+      <div class="wf-step"><div class="num">04</div><h4>Analysis &amp; synthesis</h4><p>Applies SME logic, summarises findings</p></div>
+      <div class="wf-step"><div class="num">05</div><h4>Response</h4><p>Generates answer, draft memo or recommended actions</p></div>
+    </div>
+  </section>
+
+  <div class="two-col">
+    <section class="block">
+      <h2>Tools &amp; integrations</h2>
+      <table class="mini-table card">
+        <tr><td>Document AI</td><td>Extract and structure documents</td></tr>
+        <tr><td>Credit Scoring API</td><td>Retrieve credit scores and risk indicators</td></tr>
+        <tr><td>SME Policy Library</td><td>Search internal credit policies and guidelines</td></tr>
+        <tr><td>Microsoft 365</td><td>Access SharePoint, Teams and internal docs</td></tr>
+        <tr><td>Custom Memo Generator</td><td>Create draft credit memos using templates</td></tr>
+      </table>
+    </section>
+    <section class="block">
+      <h2>Data sources</h2>
+      <table class="mini-table card">
+        <tr><td>AOS (Customer System)</td><td>Customer information and facilities</td></tr>
+        <tr><td>Credit Risk Database</td><td>Credit ratings and risk metrics</td></tr>
+        <tr><td>SharePoint</td><td>Policies, guidelines and templates</td></tr>
+        <tr><td>SME Knowledge Base</td><td>Product information and FAQs</td></tr>
+        <tr><td>External Data (via API)</td><td>Company registry and industry data</td></tr>
+      </table>
+    </section>
+  </div>
+
+  <p class="scroll-cue">
+    <a href="#entitlements" style="color:inherit;text-decoration:none;">
+      <span class="arrow">↓</span>View entitlements &amp; allowed mappings
+    </a>
+  </p>
+
+  <!-- ===================== ENTITLEMENTS & ALLOWED MAPPINGS ===================== -->
+  <div id="entitlements">
+    <h1 style="margin-top:60px;">Entitlements &amp; Allowed Mappings</h1>
+    <p class="sub" style="max-width:760px;">Centralized control over "who can call what." The Control Portal lets Governance Admins manage authoritative metadata and enforce strict Allowed Mappings, integrated directly with Entra ID, so it's clear exactly who is entitled to discover, build with, or consume this agent, model, or data product.</p>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="overview" onclick="showTab('overview')">Overview</div>
+      <div class="tab" data-tab="access" onclick="showTab('access')">Access &amp; Permissions</div>
+      <div class="tab" data-tab="validation" onclick="showTab('validation')">Validation</div>
+      <div class="tab" data-tab="pending" onclick="showTab('pending')">Pending Approvals</div>
+      <div class="tab" data-tab="audit" onclick="showTab('audit')">Audit Trail</div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="tab-panel" id="panel-overview">
+      <div class="panel card">
+        <div class="two">
+          <div>
+            <div class="field"><label>Status</label><input type="text" value="Active" readonly></div>
+            <div class="field"><label>Cloud Platform</label><input type="text" value="GCP" readonly></div>
+            <div class="field"><label>Guardrail / Policy Status</label><input type="text" value="Compliant" readonly></div>
+            <div class="field"><label>Risk Tier</label><span class="badge live">Low</span></div>
+            <div class="field" style="margin-top:14px;"><label>Runbook Coverage</label><span class="badge live">Documented</span></div>
+            <div class="field" style="margin-top:14px;"><label>Connected Internal Apps</label>
+              <div class="chip">SME Relationship Manager Portal</div>
+            </div>
+          </div>
+          <div>
+            <div class="field"><label>Owner</label><input type="text" value="SME Banking / Sales" readonly></div>
+            <div class="field"><label>Approved Model(s)</label><input type="text" value="gemini-1.5-flash" readonly></div>
+            <div class="field"><label>Last Configuration Update</label><input type="text" value="1 week ago" readonly></div>
+            <div class="field"><label>Human Oversight</label><input type="text" value="Optional" readonly></div>
+            <div class="field" style="margin-top:14px;"><label>Applied Policies</label><span style="font-size:13px;color:var(--muted);">No policies applied.</span></div>
+          </div>
+        </div>
+        <div class="group-title" style="margin-top:6px;">RUNBOOK</div>
+        <div class="two">
+          <div>
+            <div class="field"><label>Triggers / Severity</label><span style="font-size:13px;color:var(--muted);">Not documented</span></div>
+            <div class="field"><label>Escalation</label><span style="font-size:13px;color:var(--muted);">Not documented</span></div>
+            <div class="field"><label>Owner · Version</label><span style="font-size:13px;color:var(--muted);">—</span></div>
+          </div>
+          <div>
+            <div class="field"><label>Diagnostic Steps</label><span style="font-size:13px;color:var(--muted);">Not documented</span></div>
+            <div class="field"><label>Rollback / Kill Switch</label><span style="font-size:13px;color:var(--muted);">Not documented</span></div>
+            <div class="field"><label>Last Reviewed</label><span style="font-size:13px;color:var(--muted);">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCESS & PERMISSIONS -->
+    <div class="tab-panel" id="panel-access" style="display:none;">
+      <div class="two">
+        <div>
+          <div class="panel card" style="margin-bottom:20px;">
+            <div class="group-title">USERS / ROLES WITH ACCESS</div>
+            <div class="chip">SME Sales Team <button>×</button></div>
+            <div class="add-row"><input placeholder="Add role or user group..."><button class="btn-secondary">Add</button></div>
+          </div>
+          <div class="panel card">
+            <div class="group-title">ENTRA ID / AZURE AD GROUPS</div>
+            <div class="chip">AAD-SME-LeadGen-Users <button>×</button></div>
+            <div class="add-row"><input placeholder="Add Entra ID group..."><button class="btn-secondary">Add</button></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel card" style="margin-bottom:20px;">
+            <div class="group-title">ALLOWED BIGQUERY GOLD DATASETS</div>
+            <div class="chip">gold.sme_prospect_scores <button>×</button></div>
+            <div class="chip">gold.sme_firmographics <button>×</button></div>
+            <div class="add-row"><input placeholder="Add gold.dataset_name ..."><button class="btn-secondary">Add</button></div>
+          </div>
+          <div class="panel card">
+            <div class="group-title">CONNECTED INTERNAL APPS</div>
+            <div class="chip">SME Relationship Manager Portal <button>×</button></div>
+            <div class="add-row"><input placeholder="Add internal app..."><button class="btn-secondary">Add</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- placeholder panels for the remaining tabs -->
+    <div class="tab-panel panel card" id="panel-validation" style="display:none;color:var(--muted);font-size:13.5px;">No validation checks configured yet.</div>
+    <div class="tab-panel panel card" id="panel-pending" style="display:none;color:var(--muted);font-size:13.5px;">No pending approvals.</div>
+    <div class="tab-panel panel card" id="panel-audit" style="display:none;color:var(--muted);font-size:13.5px;">No audit events recorded yet.</div>
+  </div>
+
+  <script>
+    function showTab(name){
+      document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+      document.querySelectorAll('.tab-panel').forEach(p=>p.style.display='none');
+      document.getElementById('panel-'+name).style.display='block';
+    }
+  </script>
+
+</div>
+</body>
+</html>

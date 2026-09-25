@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Agent Registry</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="page">
+  <h1>Agent Registry</h1>
+  <p class="sub">A single registry for all AI agents and assets across ABMB.</p>
+
+  <div class="controls">
+    <div class="search"><input type="text" placeholder="Search agents, owners or keywords..."></div>
+    <select><option>All audiences</option></select>
+    <select><option>All classifications</option></select>
+    <select><option>All statuses</option></select>
+    <button class="btn-primary" onclick="openRegisterModal()">+ Register Agent</button>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Agent name</th><th>Description</th><th>Owner</th><th>Audience</th>
+          <th>Classification</th><th>Status</th><th>Stage</th><th>Monthly active users</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="agentTableBody">
+        <tr class="agent-row">
+          <td class="agent-name">Finance Analytics</td>
+          <td class="desc">Answers questions on unsecured SME default and delinquency rates by sector, and exposure against the single-obligor ceiling.</td>
+          <td>Finance Analytics</td><td>Finance</td>
+          <td><span class="badge confidential">Confidential</span></td>
+          <td><span class="badge live">Live</span></td>
+          <td><span class="badge stage" onclick="event.stopPropagation();openProductionModal(this)">Production</span></td>
+          <td>128</td>
+          <td><div class="row-actions"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
+        </tr>
+        <tr class="agent-row">
+          <td class="agent-name">HR Analytics</td>
+          <td class="desc">Provides headcount, attrition, leave and hiring trends from governed HR data marts.</td>
+          <td>HR CoE</td><td>HR</td>
+          <td><span class="badge confidential">Confidential</span></td>
+          <td><span class="badge live">Live</span></td>
+          <td><span class="badge stage" onclick="event.stopPropagation();openProductionModal(this)">Production</span></td>
+          <td>74</td>
+          <td><div class="row-actions"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
+        </tr>
+        <tr class="agent-row">
+          <td class="agent-name">Market Outlook</td>
+          <td class="desc">Delivers the Malaysian SME credit outlook by sector for the next two quarters.</td>
+          <td>Economics &amp; Research</td><td>Finance</td>
+          <td><span class="badge internal">Internal</span></td>
+          <td><span class="badge live">Live</span></td>
+          <td><span class="badge stage" onclick="event.stopPropagation();openProductionModal(this)">Production</span></td>
+          <td>212</td>
+          <td><div class="row-actions"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
+        </tr>
+        <tr class="agent-row">
+          <td class="agent-name">Credit Policy</td>
+          <td class="desc">Returns the current approved unsecured SME credit parameters: ceiling, portfolio assumption, concentration threshold and sub-ceiling.</td>
+          <td>Credit Risk</td><td>Finance</td>
+          <td><span class="badge restricted">Restricted</span></td>
+          <td><span class="badge live">Live</span></td>
+          <td><span class="badge stage" onclick="event.stopPropagation();openProductionModal(this)">Production</span></td>
+          <td>163</td>
+          <td><div class="row-actions"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
+        </tr>
+        <tr class="agent-row">
+          <td class="agent-name">Policy Library</td>
+          <td class="desc">Searches the policies and SOPs a user is cleared to read for their question.</td>
+          <td>Group Policy Office</td><td>HR</td>
+          <td><span class="badge internal">Internal</span></td>
+          <td><span class="badge live">Live</span></td>
+          <td><span class="badge stage" onclick="event.stopPropagation();openProductionModal(this)">Production</span></td>
+          <td>340</td>
+          <td><div class="row-actions"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
+        </tr>
+        <tr class="agent-row spotlight" onclick="openAgentModal()">
+          <td class="agent-name">Agent Kevin</td>
+          <td class="desc">SME RM workbench for case preparation, credit readiness and draft memo support.</td>
+          <td>SME Banking</td><td>Relationship Managers</td>
+          <td><span class="badge confidential">Confidential</span></td>
+          <td><span class="badge ready">Ready</span></td>
+          <td><span class="badge promote" id="kevinStageBadge" onclick="event.stopPropagation();openPipelineModal()">Promote</span></td>
+          <td>54</td>
+          <td><div class="row-actions">
+            <button class="btn-secondary" onclick="event.stopPropagation()">Ask owner</button>
+            <button class="btn-secondary" onclick="event.stopPropagation();openAgentModal()">Try agent</button>
+            <button class="btn-secondary" onclick="event.stopPropagation()">Request access</button>
+          </div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="sub" style="margin-top:18px;">Click <b>Agent Kevin</b> to open its detail panel — scroll down inside it to see its Entitlements &amp; Allowed Mappings. Click its <b>Stage</b> tag to walk through the promotion pipeline. <a href="#" onclick="resetDemo();return false;" style="color:var(--pink);font-weight:600;">Reset demo</a></p>
+</div>
+
+<!-- ===================== AGENT KEVIN MODAL ===================== -->
+<div class="modal-overlay" id="agentModal" onclick="if(event.target===this)closeAgentModal()">
+  <div class="modal-panel">
+    <button class="modal-close" onclick="closeAgentModal()">×</button>
+
+    <div class="detail-header"><h1>Agent Kevin</h1></div>
+    <div class="meta-row">
+      <span><b>Owner:</b> SME Banking</span>
+      <span><b>Audience:</b> Relationship Managers</span>
+      <span><b>Classification:</b> <span class="badge confidential">Confidential</span></span>
+      <span><b>Status:</b> <span class="badge ready">Ready</span></span>
+    </div>
+    <p class="lede">Agent Kevin helps SME relationship managers with case preparation, credit readiness, and draft memo support. It brings together relevant data, guidelines and templates to accelerate high-quality SME credit discussions and documentation.</p>
+
+    <dl class="fact-grid card">
+      <dt>Purpose</dt><dd>Support SME credit analysis and relationship management, including case preparation, credit readiness assessment, and generation of draft memos.</dd>
+      <dt>Primary Users</dt><dd>SME Relationship Managers</dd>
+      <dt>Department</dt><dd>Business Banking</dd>
+      <dt>Version</dt><dd>v2.3</dd>
+      <dt>Last Updated</dt><dd>12 Sep 2026</dd>
+    </dl>
+
+    <section class="block">
+      <h2>Agent workflow</h2>
+      <div class="workflow card">
+        <div class="wf-step"><div class="num">01</div><h4>User request</h4><p>SME RM asks a question or uploads documents</p></div>
+        <div class="wf-step"><div class="num">02</div><h4>Orchestrator</h4><p>Understands intent, plans workflow and calls relevant tools</p></div>
+        <div class="wf-step"><div class="num">03</div><h4>Data retrieval</h4><p>Fetches data from approved sources</p></div>
+        <div class="wf-step"><div class="num">04</div><h4>Analysis &amp; synthesis</h4><p>Applies SME logic, summarises findings</p></div>
+        <div class="wf-step"><div class="num">05</div><h4>Response</h4><p>Generates answer, draft memo or recommended actions</p></div>
+      </div>
+    </section>
+
+    <div class="two-col">
+      <section class="block">
+        <h2>Tools &amp; integrations</h2>
+        <table class="mini-table card">
+          <tr><td>Document AI</td><td>Extract and structure documents</td></tr>
+          <tr><td>Credit Scoring API</td><td>Retrieve credit scores and risk indicators</td></tr>
+          <tr><td>SME Policy Library</td><td>Search internal credit policies and guidelines</td></tr>
+          <tr><td>Microsoft 365</td><td>Access SharePoint, Teams and internal docs</td></tr>
+          <tr><td>Custom Memo Generator</td><td>Create draft credit memos using templates</td></tr>
+        </table>
+      </section>
+      <section class="block">
+        <h2>Data sources</h2>
+        <table class="mini-table card">
+          <tr><td>AOS (Customer System)</td><td>Customer information and facilities</td></tr>
+          <tr><td>Credit Risk Database</td><td>Credit ratings and risk metrics</td></tr>
+          <tr><td>SharePoint</td><td>Policies, guidelines and templates</td></tr>
+          <tr><td>SME Knowledge Base</td><td>Product information and FAQs</td></tr>
+          <tr><td>External Data (via API)</td><td>Company registry and industry data</td></tr>
+        </table>
+      </section>
+    </div>
+
+    <p class="scroll-cue">
+      <a href="#entitlements" style="color:inherit;text-decoration:none;">
+        <span class="arrow">↓</span>View entitlements &amp; allowed mappings
+      </a>
+    </p>
+
+    <!-- ===================== ENTITLEMENTS & ALLOWED MAPPINGS ===================== -->
+    <div id="entitlements">
+      <h1 style="margin-top:60px;">Entitlements &amp; Allowed Mappings</h1>
+      <p class="sub" style="max-width:760px;">Centralized control over "who can call what." The Control Portal lets Governance Admins manage authoritative metadata and enforce strict Allowed Mappings, integrated directly with Entra ID, so it's clear exactly who is entitled to discover, build with, or consume this agent, model, or data product.</p>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="overview" onclick="showEntTab('overview')">Overview</div>
+        <div class="tab" data-tab="access" onclick="showEntTab('access')">Access &amp; Permissions</div>
+      </div>
+
+      <div class="tab-panel" id="panel-overview">
+        <div class="panel card">
+          <div class="two">
+            <div>
+              <div class="field"><label>Status</label><input type="text" value="Active" readonly></div>
+              <div class="field"><label>Cloud Platform</label><input type="text" value="GCP" readonly></div>
+              <div class="field"><label>Guardrail / Policy Status</label><input type="text" value="Compliant" readonly></div>
+              <div class="field"><label>Risk Tier</label><span class="badge live">Low</span></div>
+              <div class="field" style="margin-top:14px;"><label>Runbook Coverage</label><span class="badge live">Documented</span></div>
+              <div class="field" style="margin-top:14px;"><label>Connected Internal Apps</label>
+                <div class="chip">SME Relationship Manager Portal</div>
+              </div>
+            </div>
+            <div>
+              <div class="field"><label>Owner</label><input type="text" value="SME Banking / Sales" readonly></div>
+              <div class="field"><label>Approved Model(s)</label><input type="text" value="gemini-1.5-flash" readonly></div>
+              <div class="field"><label>Last Configuration Update</label><input type="text" value="1 week ago" readonly></div>
+              <div class="field"><label>Human Oversight</label><input type="text" value="Optional" readonly></div>
+              <div class="field" style="margin-top:14px;"><label>Applied Policies</label><span style="font-size:13px;color:var(--muted);">No policies applied.</span></div>
+            </div>
+          </div>
+          <div class="group-title" style="margin-top:6px;">RUNBOOK</div>
+          <div class="two">
+            <div>
+              <div class="field"><label>Triggers / Severity</label><span style="font-size:13px;color:var(--muted);">Not documented</span></div>
+              <div class="field"><label>Escalation</label><span style="font-size:13px;color:var(--muted);">Not documented</span></div>
+              <div class="field"><label>Owner · Version</label><span style="font-size:13px;color:var(--muted);">—</span></div>
+            </div>
+            <div>
+              <div class="field"><label>Diagnostic Steps</label><span style="font-size:13px;color:var(--muted);">Not documented</span></div>
+              <div class="field"><label>Rollback / Kill Switch</label><span style="font-size:13px;color:var(--muted);">Not documented</span></div>
+              <div class="field"><label>Last Reviewed</label><span style="font-size:13px;color:var(--muted);">—</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="panel-access" style="display:none;">
+        <div class="two">
+          <div>
+            <div class="panel card" style="margin-bottom:20px;">
+              <div class="group-title">USERS / ROLES WITH ACCESS</div>
+              <div class="chip">SME Sales Team <button>×</button></div>
+              <div class="add-row"><input placeholder="Add role or user group..."><button class="btn-secondary">Add</button></div>
+            </div>
+            <div class="panel card">
+              <div class="group-title">ENTRA ID / AZURE AD GROUPS</div>
+              <div class="chip">AAD-SME-LeadGen-Users <button>×</button></div>
+              <div class="add-row"><input placeholder="Add Entra ID group..."><button class="btn-secondary">Add</button></div>
+            </div>
+          </div>
+          <div>
+            <div class="panel card" style="margin-bottom:20px;">
+              <div class="group-title">ALLOWED BIGQUERY GOLD DATASETS</div>
+              <div class="chip">gold.sme_prospect_scores <button>×</button></div>
+              <div class="chip">gold.sme_firmographics <button>×</button></div>
+              <div class="add-row"><input placeholder="Add gold.dataset_name ..."><button class="btn-secondary">Add</button></div>
+            </div>
+            <div class="panel card">
+              <div class="group-title">CONNECTED INTERNAL APPS</div>
+              <div class="chip">SME Relationship Manager Portal <button>×</button></div>
+              <div class="add-row"><input placeholder="Add internal app..."><button class="btn-secondary">Add</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PROMOTION PIPELINE MODAL ===================== -->
+<div class="modal-overlay" id="pipelineModal" onclick="if(event.target===this)closePipelineModal()">
+  <div class="modal-panel" style="width:min(1080px,96%);">
+    <button class="modal-close" onclick="closePipelineModal()">×</button>
+    <h1 style="margin-bottom:6px;" id="pipeTitle">Promotion Pipeline — Agent Kevin</h1>
+    <span class="badge stage" id="pipeStagePill" style="margin-bottom:4px;"></span>
+    <p class="lede" id="pipeStageDesc" style="margin-top:10px;margin-bottom:0;"></p>
+
+    <div class="stage-steps" id="pipeSteps"></div>
+
+    <div class="three-col" id="pipeGrid"></div>
+
+    <div class="pipe-card" id="pipeNext" style="margin-top:20px;"></div>
+  </div>
+</div>
+
+<!-- ===================== REGISTER AGENT MODAL ===================== -->
+<div class="modal-overlay" id="registerModal" onclick="if(event.target===this)closeRegisterModal()">
+  <div class="modal-panel" style="width:min(720px,94%);">
+    <button class="modal-close" onclick="closeRegisterModal()">×</button>
+    <div id="registerContent"></div>
+  </div>
+</div>
+
+<script>
+  const STAGE_NAMES = ["Promote","POC / DEV","Testing","Pilot","Production"];
+  const STAGE_TITLES = [null,
+    "Stage 1: POC / DEV — Isolated Sandbox Build",
+    "Stage 2: TESTING — Quality, Security & Deterministic Gates",
+    "Stage 3: PILOT — Real-World RM Usage under Hypercare",
+    "Stage 4: PROD — Immutable Release & Enterprise Marketplace Registration"];
+  const STAGE_DESC = [null,
+    "Establishing baseline agent logic, synthetic data grounding, and prompt boundaries within an isolated GCP development project.",
+    "Executing 100% automated evaluations across Golden Datasets, prompt injection red-teaming, and deterministic credit rule engines.",
+    "Deploying to a restricted cohort of 10 SME Relationship Managers with real-time semantic firewalling and maker-checker logging.",
+    "Final cryptographic compliance approval unlocks bank-wide RM availability, immutable auditing, and runtime kill-switch readiness."];
+  const STEP_LABELS = [
+    {t:"POC / DEV", s:"The Build"},
+    {t:"Testing", s:"Automated Assurance Gate"},
+    {t:"Pilot", s:"InfoSec & Risk Gate"},
+    {t:"Production", s:"Compliance Sign-off"}];
+
+  const PIPELINE = {
+    1:{
+      overview:{Name:"Agent Kevin",Owner:"SME Banking",Audience:"SME Relationship Managers",Classification:"Confidential",Tier:"Tier 3 – High Risk",Environment:"GCP Secured Sandbox (Vertex AI)","Current stage":"POC / DEV","Build setup":"Synthetic/masked SME loan data, prompt/workflow, evaluation setup"},
+      panel2:{title:"Guardrails",sub:"Data and security rules for this environment.",rows:[["Synthetic customer profiles","Allowed"],["Masked SME loan applications","Allowed"],["Sample memo templates","Allowed"],["Real customer PII","Not allowed"],["Live account numbers","Not allowed"],["Production customer documents","Not allowed"]]},
+      panel3:{title:"Readiness",sub:"Check key requirements before moving to the next stage.",rows:[["Sandbox environment provisioned","Ready"],["Masked data connected","Ready"],["Evaluation setup prepared","Ready"]]},
+      nextDesc:"Submit Agent Kevin for automated testing when development is complete.",
+      primary:"Submit for Testing", secondary:"Save Draft"
+    },
+    2:{
+      overview:{Name:"Agent Kevin",Owner:"SME Banking",Audience:"SME Relationship Managers",Classification:"Confidential",Tier:"Tier 3 – High Risk",Environment:"GCP Secured Sandbox (Vertex AI)","Current stage":"TESTING","Test setup":"Golden Datasets, Model Armor, Red-Team"},
+      panel2:{title:"Assurance results",sub:"Automated evaluation results for this agent.",badge:"Ready for approval",rows:[["Golden dataset evaluation","Passed"],["Hallucination check","Passed"],["Prompt injection red-team","Passed"],["Model Armor safety scan","Passed"],["Deterministic scoring","Ready"]]},
+      panel3:{title:"Approval",sub:"Approval details and readiness for the next stage.",kv:[["Approver","Lead QA Engineer"],["Approval rule","Manual approval required"],["Evidence pack","Evaluation report, Security scan, Red-team report"],["Decision status","Ready for approval"],["Upon approval","Move to PILOT"]],rows:[["Evaluation complete","Ready"],["Security checks complete","Ready"],["Evidence attached","Ready"]]},
+      nextDesc:"Approve Agent Kevin to move into a controlled pilot for 10 SME Relationship Managers.",
+      primary:"Approve for Pilot", secondary:"Request Rework"
+    },
+    3:{
+      overview:{Name:"Agent Kevin",Owner:"SME Banking",Audience:"SME Relationship Managers",Classification:"Confidential",Tier:"Tier 3 – High Risk",Environment:"Controlled Pilot Environment","Current stage":"PILOT","Pilot setup":"10 authorized SME RMs, Entra ID restricted access, hypercare monitoring"},
+      panel2:{title:"Pilot telemetry",sub:"Operational and risk signals captured during the pilot.",badge:"Ready for sign-off",rows:[["Restricted pilot cohort","Active"],["Real-world usage logs","Captured"],["Human-in-the-loop escalation tracking","Captured"],["Bias / fairness check","Passed"],["Pilot feedback summary","Ready"]]},
+      panel3:{title:"Approval",sub:"Sign-off details and readiness for the next stage.",kv:[["Approver","Governance Officer"],["Approval rule","Digital sign-off required"],["Evidence pack","Pilot telemetry, HITL escalation log, bias/fairness review"],["Decision status","Ready for sign-off"],["Upon approval","Move to PRODUCTION"]],rows:[["Pilot completed","Ready"],["Telemetry reviewed","Ready"],["Sign-off evidence attached","Ready"]]},
+      nextDesc:"Approve Agent Kevin to go live for all approved SME Relationship Managers.",
+      primary:"Approve for Production", secondary:"Request Rework"
+    },
+    4:{
+      overview:{Name:"Agent Kevin",Owner:"SME Banking",Audience:"All SME RMs (100+)",Classification:"Confidential",Tier:"Tier 3 – High Risk",Environment:"Production (Multi-cloud)","Current stage":"PRODUCTION","Use case":"SME credit analysis and customer insights"},
+      panel2:{title:"Compliance sign-off",sub:"Required approval to promote Agent Kevin to production.",kv:[["Approver","Alex Chen — Head of Financial Crime Compliance"],["Approval rule","Mandatory final sign-off required"],["Evidence pack","Pilot telemetry, HITL escalation log, risk/fairness review, security evidence"],["Promotion gate","Blocked until sign-off"],["Decision status","Ready for sign-off"],["Upon approval","Publish to PRODUCTION"]],rows:[["Retained evidence complete","Complete"],["Final review package attached","Complete"],["Compliance approver assigned","Complete"]]},
+      panel3:{title:"Go-live result",sub:"Once compliance signs off, the following will be activated.",rows:[["Marketplace Registry status","Active"],["Unified Chat access","Available to authorized SME RMs"],["Telemetry streaming","FinOps & Security to BigQuery"],["Monitoring","Continuous monitoring enabled"],["Production environment","Provisioned"]]},
+      nextDesc:"Final compliance sign-off is required before Agent Kevin can be promoted. Once approved, the agent will become Active in the Marketplace Registry and available to authorized users in Unified Chat.",
+      primary:"Compliance Sign Off & Publish", secondary:"Save Draft"
+    }
+  };
+
+  function getStage(id){ return parseInt(localStorage.getItem('pstage_'+id)||'0',10); }
+  function getComplete(id){ return localStorage.getItem('pcomplete_'+id)==='1'; }
+  function setStage(id, v){ localStorage.setItem('pstage_'+id, String(v)); }
+  function setComplete(id){ localStorage.setItem('pcomplete_'+id, '1'); }
+
+  function pillClass(status){
+    if(status==="Not allowed") return "no";
+    if(status==="Ready") return "pending";
+    return "ok";
+  }
+  function renderRows(rows){
+    return rows.map(([label,status])=>
+      `<div class="status-row"><span>${label}</span><span class="status-pill ${pillClass(status)}">${status}</span></div>`
+    ).join('');
+  }
+  function renderKV(kv){
+    return kv.map(([k,v])=>`<div class="kv-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+  }
+
+  // pipeMode: 'kevin' (legacy, interactive) | 'agent' (any other Ready agent, interactive) | 'production' (read-only, already live)
+  let pipeCtx = null;
+  let pipeMode = 'kevin';
+  let pipeAgentId = 'kevin';
+  let pipeBadgeEl = null;
+  const esc = t => String(t).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const TIER_BY_CLASS = {Confidential:"Tier 3 – High Risk", Restricted:"Tier 2 – Medium Risk", Internal:"Tier 1 – Low Risk"};
+  const GCP = "GCP — Cloud Run (asia-southeast1)", AZ = "Azure — Linux Function Apps (southeastasia)";
+  const HOSTING = {
+    "Finance Analytics":{env:GCP, src:"BigQuery authorized views"},
+    "HR Analytics":{env:GCP, src:"BigQuery authorized views"},
+    "Market Outlook":{env:GCP, src:"Vertex AI Search"},
+    "Credit Policy":{env:AZ, src:"Azure SQL (dbo.policy_parameter)"},
+    "Policy Library":{env:AZ, src:"Azure SQL (dbo.policy_document)"}
+  };
+
+  function stageEnvFor(view, ctx){
+    if(view===4) return ctx.env || "Production (Multi-cloud)";
+    if(view===3) return "Controlled Pilot Environment";
+    return "GCP Secured Sandbox (Vertex AI)";
+  }
+
+  function renderPipeline(view){
+    const data = PIPELINE[view];
+    const name = pipeCtx ? pipeCtx.name : 'Agent Kevin';
+    const complete = pipeMode==='production' ? true : (view===4 && getComplete(pipeAgentId));
+    const fix = t => String(t).replaceAll('Agent Kevin', name);
+
+    document.getElementById('pipeTitle').textContent = 'Promotion Pipeline — ' + name;
+    document.getElementById('pipeStagePill').textContent = STAGE_TITLES[view].split(': ')[0];
+    document.getElementById('pipeStageDesc').innerHTML = `<b>${STAGE_TITLES[view]}</b><br>${STAGE_DESC[view]}`;
+
+    // stepper
+    let stepsHtml = '';
+    STEP_LABELS.forEach((step,i)=>{
+      const n = i+1;
+      const done = n < view || complete;
+      const cls = done ? 'done' : (n===view ? 'current' : 'upcoming');
+      const mark = done ? '✓' : n;
+      stepsHtml += `<div class="stage-step ${cls}"><div class="circle">${mark}</div><div class="info"><b>${step.t}</b><span>${step.s}</span></div></div>`;
+      if(i<3) stepsHtml += `<div class="stage-connector ${(n<view||complete)?'done':''}"></div>`;
+    });
+    document.getElementById('pipeSteps').innerHTML = stepsHtml;
+
+    // overview
+    let ov = data.overview;
+    if(pipeMode==='production'){
+      ov = {Name:esc(name), Owner:esc(pipeCtx.owner), Audience:esc(pipeCtx.audience), Classification:esc(pipeCtx.classification),
+            Tier:esc(pipeCtx.tier), Environment:esc(pipeCtx.env), "Current stage":"PRODUCTION"};
+      if(pipeCtx.src) ov["Data source"] = esc(pipeCtx.src);
+      ov["Use case"] = esc(pipeCtx.desc);
+    } else if(pipeMode==='agent'){
+      ov = {Name:esc(name), Owner:esc(pipeCtx.owner), Audience:esc(pipeCtx.audience), Classification:esc(pipeCtx.classification),
+            Tier:esc(pipeCtx.tier), Environment:esc(stageEnvFor(view, pipeCtx)),
+            "Current stage": complete ? "PRODUCTION" : STAGE_NAMES[view].toUpperCase()};
+      if(complete && pipeCtx.src) ov["Data source"] = esc(pipeCtx.src);
+      ov["Use case"] = esc(pipeCtx.desc);
+    }
+    const ovRows = Object.entries(ov).map(([k,v])=>`<div class="kv-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+    const col1 = `<div class="pipe-card"><div class="pipe-head"><h3>Agent overview</h3><button class="btn-secondary" style="padding:5px 10px;font-size:12px;">Edit</button></div><p class="pipe-sub">Key details for ${esc(name)} at this stage.</p>${ovRows}</div>`;
+
+    // panel2 (once published, the sign-off is shown as granted)
+    let p2 = data.panel2;
+    if(complete && view===4){
+      const granted = {"Promotion gate":"Cleared","Decision status":"Approved","Upon approval":"Published to PRODUCTION"};
+      p2 = {...p2, sub:`Compliance approval granted for ${esc(name)} to run in production.`,
+            kv:p2.kv.map(([k,v])=>[k, granted[k]||v])};
+    } else { p2 = {...p2, sub:fix(p2.sub)}; }
+    const col2 = `<div class="pipe-card"><div class="pipe-head"><h3>${p2.title}</h3>${p2.badge?`<span class="pill-ready">${p2.badge}</span>`:''}</div><p class="pipe-sub">${p2.sub}</p>${p2.kv?renderKV(p2.kv):''}${p2.rows?renderRows(p2.rows):''}</div>`;
+
+    // panel3
+    let p3 = data.panel3;
+    if(complete && view===4){
+      p3 = {...p3, sub:"Compliance has signed off; the following are now active.",
+            rows:p3.rows.map(([k,v])=>[k, (pipeCtx && v==="Available to authorized SME RMs") ? "Available to authorized users" : v])};
+    }
+    const col3 = `<div class="pipe-card"><div class="pipe-head"><h3>${p3.title}</h3></div><p class="pipe-sub">${p3.sub}</p>${p3.kv?renderKV(p3.kv):''}${p3.rows?renderRows(p3.rows):''}</div>`;
+
+    document.getElementById('pipeGrid').innerHTML = col1+col2+col3;
+
+    const nextText = complete
+      ? (pipeMode!=='kevin' ? `${esc(name)} is live in production and available to all authorized users.` : 'Agent Kevin is live in production and available to all authorized SME Relationship Managers.')
+      : fix(data.nextDesc);
+    document.getElementById('pipeNext').innerHTML = `
+      <div class="pipe-head"><h3>Next step</h3></div>
+      <p class="pipe-next-desc">${nextText}</p>
+      <div class="pipe-actions">
+        <button class="btn-secondary" onclick="closePipelineModal()">${complete?'Close':data.secondary}</button>
+        <button class="btn-primary" ${complete?'disabled style="opacity:.5;cursor:default;"':''} onclick="advanceStage(${view})">${complete?'Published':data.primary}</button>
+      </div>`;
+  }
+
+  function currentView(id){
+    const stage = getStage(id);
+    if(stage===0) return 1;
+    if(stage===4) return 4;
+    return stage+1;
+  }
+
+  // el is omitted for Agent Kevin (legacy), or the clicked Stage badge for any other Ready agent.
+  function openPipelineModal(el){
+    if(!el){
+      pipeMode = 'kevin'; pipeAgentId = 'kevin'; pipeCtx = null;
+      pipeBadgeEl = document.getElementById('kevinStageBadge');
+    } else {
+      const row = el.closest('tr');
+      const name = row.querySelector('.agent-name').textContent.trim();
+      const classification = row.children[4].textContent.trim();
+      pipeMode = 'agent';
+      pipeAgentId = row.dataset.agentId;
+      pipeBadgeEl = el;
+      pipeCtx = {
+        name,
+        desc: row.querySelector('.desc').textContent.trim(),
+        owner: row.dataset.owner || row.children[2].textContent.trim(),
+        audience: row.dataset.audience || row.children[3].textContent.trim(),
+        classification,
+        tier: TIER_BY_CLASS[classification] || "Tier 2 – Medium Risk",
+        env: (HOSTING[name]||{}).env || "Production (Multi-cloud)",
+        src: (HOSTING[name]||{}).src || ""
+      };
+    }
+    renderPipeline(currentView(pipeAgentId));
+    document.getElementById('pipelineModal').classList.add('open');
+    document.body.classList.add('modal-open');
+  }
+  function openProductionModal(badge){
+    const c = badge.closest('tr').children;
+    const classification = c[4].textContent.trim();
+    pipeMode = 'production'; pipeAgentId = null; pipeBadgeEl = null;
+    pipeCtx = {
+      name: c[0].textContent.trim(),
+      desc: c[1].textContent.trim(),
+      owner: c[2].textContent.trim(),
+      audience: c[3].textContent.trim(),
+      classification,
+      tier: TIER_BY_CLASS[classification] || "Tier 2 – Medium Risk",
+      env: (HOSTING[c[0].textContent.trim()]||{}).env || "Production (Multi-cloud)",
+      src: (HOSTING[c[0].textContent.trim()]||{}).src || ""
+    };
+    renderPipeline(4);
+    document.getElementById('pipelineModal').classList.add('open');
+    document.body.classList.add('modal-open');
+  }
+  function closePipelineModal(){
+    document.getElementById('pipelineModal').classList.remove('open');
+    document.body.classList.remove('modal-open');
+  }
+  function advanceStage(view){
+    if(view===4){
+      setStage(pipeAgentId, 4);
+      setComplete(pipeAgentId);
+      renderPipeline(4);
+      updateStageBadge();
+      return;
+    }
+    setStage(pipeAgentId, view);
+    renderPipeline(view+1);
+    updateStageBadge();
+  }
+  function updateStageBadge(){
+    if(!pipeBadgeEl) return;
+    const stage = getStage(pipeAgentId);
+    if(stage===0){
+      pipeBadgeEl.className='badge promote'; pipeBadgeEl.textContent='Promote';
+    } else {
+      pipeBadgeEl.className='badge stage'; pipeBadgeEl.textContent=STAGE_NAMES[stage];
+      pipeBadgeEl.setAttribute('onclick','event.stopPropagation();openPipelineModal(this)');
+    }
+  }
+  pipeBadgeEl = document.getElementById('kevinStageBadge');
+  updateStageBadge();
+
+  function resetDemo(){
+    localStorage.removeItem('pstage_kevin');
+    localStorage.removeItem('pcomplete_kevin');
+    pipeMode='kevin'; pipeAgentId='kevin'; pipeBadgeEl = document.getElementById('kevinStageBadge');
+    updateStageBadge();
+    // remove every agent created through + Register Agent
+    document.querySelectorAll('#agentTableBody tr[data-registered="1"]').forEach(r=>r.remove());
+    window.__pendingAgent = null;
+  }
+
+  function openAgentModal(){
+    document.getElementById('agentModal').classList.add('open');
+    document.body.classList.add('modal-open');
+  }
+  function closeAgentModal(){
+    document.getElementById('agentModal').classList.remove('open');
+    document.body.classList.remove('modal-open');
+  }
+  function showEntTab(name){
+    document.querySelectorAll('#agentModal .tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+    document.querySelectorAll('#agentModal .tab-panel').forEach(p=>p.style.display='none');
+    document.getElementById('panel-'+name).style.display='block';
+  }
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAgentModal(); closePipelineModal(); if(window.__apiKeyRow) closeApiKeyModal(); else closeRegisterModal(); } });
+
+  // ===== Register Agent wizard =====
+  const DEPT_TREE = {
+    "Finance": {
+      "Finance": ["Finance Analytics","Economics & Research","Treasury"],
+      "Credit & Risk": ["Credit Risk","Credit Policy Team"]
+    },
+    "HR": {
+      "HR": ["HR CoE","People Analytics"],
+      "People Operations": ["People Operations Team","Talent Acquisition"]
+    },
+    "Group Functions": {
+      "Compliance": ["Group Policy Office","Compliance Team"],
+      "Legal": ["Legal Ops"]
+    }
+  };
+  const DEPT_OPTIONS = Object.keys(DEPT_TREE).map(d=>`<option value="${d}">${d}</option>`).join('');
+
+  function onDeptChange(){
+    const dept = document.getElementById('regDept').value;
+    const audSel = document.getElementById('regAudience');
+    const ownSel = document.getElementById('regOwner');
+    ownSel.innerHTML = '<option value="">Select audience first</option>';
+    ownSel.disabled = true;
+    if(!dept){
+      audSel.innerHTML = '<option value="">Select department first</option>';
+      audSel.disabled = true;
+      return;
+    }
+    const audiences = Object.keys(DEPT_TREE[dept]);
+    audSel.innerHTML = '<option value="">Select audience...</option>' + audiences.map(a=>`<option value="${a}">${a}</option>`).join('');
+    audSel.disabled = false;
+  }
+  function onAudienceChange(){
+    const dept = document.getElementById('regDept').value;
+    const aud = document.getElementById('regAudience').value;
+    const ownSel = document.getElementById('regOwner');
+    if(!dept || !aud){
+      ownSel.innerHTML = '<option value="">Select audience first</option>';
+      ownSel.disabled = true;
+      return;
+    }
+    const owners = DEPT_TREE[dept][aud] || [];
+    ownSel.innerHTML = '<option value="">Select owner...</option>' + owners.map(o=>`<option value="${o}">${o}</option>`).join('');
+    ownSel.disabled = false;
+  }
+
+  function wizardHtml(){
+    return `
+      <div class="wizard" style="padding:0;">
+        <h2 style="margin-top:0;">Register New Agent</h2>
+        <p class="hint">Provide key information about your agent to request access to models and begin the approval process.</p>
+        <div class="steps">
+          <div class="step active"><span class="circle">1</span><span class="label">Agent Details</span></div>
+          <div class="step-line"></div>
+          <div class="step"><span class="circle">2</span><span class="label">Model Access</span></div>
+          <div class="step-line"></div>
+          <div class="step"><span class="circle">3</span><span class="label">Additional Information</span></div>
+          <div class="step-line"></div>
+          <div class="step"><span class="circle">4</span><span class="label">Review &amp; Submit</span></div>
+        </div>
+        <fieldset>
+          <legend>1. Basic Information</legend>
+          <p class="hint">Tell us about your agent and its purpose.</p>
+          <div class="grid2">
+            <div><label class="f-label">Agent name *</label><input type="text" id="regName" placeholder="e.g. Document Extraction Agent"></div>
+            <div><label class="f-label">Department *</label>
+              <select id="regDept" onchange="onDeptChange()">
+                <option value="">Select department...</option>
+                ${DEPT_OPTIONS}
+              </select>
+            </div>
+          </div>
+          <div class="grid2">
+            <div><label class="f-label">Owner / team *</label>
+              <select id="regOwner" disabled>
+                <option value="">Select audience first</option>
+              </select>
+            </div>
+            <div><label class="f-label">Intended audience *</label>
+              <select id="regAudience" onchange="onAudienceChange()" disabled>
+                <option value="">Select department first</option>
+              </select>
+            </div>
+          </div>
+          <label class="f-label">Description *</label>
+          <p class="hint" style="margin-top:-6px;">Please include goal, context, format, and expected output in the description.</p>
+          <textarea rows="5" id="regDesc" placeholder="Goal — what you want the agent to accomplish.
+Context — relevant background, data sources, or constraints it should know about.
+Format — how the output should be structured (e.g. table, memo, bullet list).
+Expected output — what a complete, correct response looks like."></textarea>
+        </fieldset>
+        <fieldset>
+          <legend>2. Publication &amp; Access</legend>
+          <p class="hint">Control who can access your agent and how it will be used.</p>
+          <div class="grid2">
+            <div>
+              <label class="f-label">Visibility *</label>
+              <div class="radio-row" id="regVisibility">
+                <div class="radio" onclick="selectRadio(this)" data-val="Personal">Personal</div>
+                <div class="radio selected" onclick="selectRadio(this)" data-val="Team">Team</div>
+                <div class="radio" onclick="selectRadio(this)" data-val="To be published">To be published</div>
+              </div>
+            </div>
+            <div><label class="f-label">Expected user count (per month) *</label><input type="text" id="regUsers" placeholder="e.g. 500 - 1,000"></div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>3. Model Access</legend>
+          <p class="hint">Select the model capability aliases you need access to.</p>
+          <div class="checks" id="regModels">
+            ${["general-chat","reasoning-high","drafting","classification","extraction","embedding","voice","image"].map(m=>
+              `<div class="check" onclick="toggleCheck(this)" data-val="${m}">☐ ${m}</div>`).join('')}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>4. Supporting Information</legend>
+          <p class="hint">Provide any additional details to help with the review process.</p>
+          <label class="f-label">Use case / business need *</label>
+          <textarea rows="3" id="regUseCase" placeholder="Describe the business need this agent solves."></textarea>
+        </fieldset>
+        <div class="wizard-actions">
+          <button class="btn-secondary" onclick="closeRegisterModal()">Cancel</button>
+          <button class="btn-primary" onclick="submitRegister()">Next</button>
+        </div>
+      </div>`;
+  }
+
+  function toggleCheck(el){
+    el.classList.toggle('checked');
+    const on = el.classList.contains('checked');
+    el.textContent = (on?'☑ ':'☐ ') + el.dataset.val;
+  }
+  function selectRadio(el){
+    el.parentElement.querySelectorAll('.radio').forEach(r=>r.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function openRegisterModal(){
+    window.__apiKeyRow = null;
+    document.getElementById('registerContent').innerHTML = wizardHtml();
+    document.getElementById('registerModal').classList.add('open');
+    document.body.classList.add('modal-open');
+  }
+  function closeRegisterModal(){
+    document.getElementById('registerModal').classList.remove('open');
+    document.body.classList.remove('modal-open');
+  }
+
+  // Register wizard "Next": registers the agent straight away as Pending.
+  // No API-key screen here anymore -- that now lives behind the Status column (see openApiKeyModal).
+  // Dummy granted models for the demo -- the real underlying models behind whichever
+  // capability aliases were requested (e.g. general-chat, reasoning-high, drafting...).
+  const DUMMY_GRANTED_MODELS = "Gemini 2.5 Pro, Claude 3.5 Sonnet";
+
+  function submitRegister(){
+    const name = document.getElementById('regName').value.trim() || 'Untitled Agent';
+    const desc = document.getElementById('regDesc').value.trim() || 'No description provided.';
+    const dept = document.getElementById('regDept').value || 'Unassigned';
+    const audience = document.getElementById('regAudience').value || 'Internal teams';
+    const owner = document.getElementById('regOwner').value || 'Unassigned';
+    const apiKey = 'abmb_live_' + Array.from({length:20},()=>Math.random().toString(36)[2]||'x').join('');
+    window.__regCounter = (window.__regCounter||0) + 1;
+    const agentId = 'reg' + window.__regCounter;
+
+    const row = `<tr class="agent-row" data-registered="1" data-agent-id="${agentId}" data-owner="${owner}" data-audience="${audience}" data-dept="${dept}" data-models="${DUMMY_GRANTED_MODELS}" data-apikey="${apiKey}" data-key-checked="0">
+      <td class="agent-name">${name}</td>
+      <td class="desc">${desc}</td>
+      <td>${owner}</td><td>${audience}</td>
+      <td><span class="badge internal">Internal</span></td>
+      <td><span class="badge pending" onclick="event.stopPropagation();approvePending(this)" title="Click to simulate admin approval">Pending</span></td>
+      <td><span class="badge promote" style="opacity:.75;cursor:default;" title="Promotion pipeline not started">Promote</span></td>
+      <td>0</td>
+      <td><div class="row-actions"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
+    </tr>`;
+    document.getElementById('agentTableBody').insertAdjacentHTML('beforeend', row);
+    closeRegisterModal();
+  }
+
+  // Admin approval (simulated by clicking the Pending badge in this demo)
+  function approvePending(el){
+    el.className = 'badge checkapikey';
+    el.textContent = 'Check API Key';
+    el.title = 'Click to view your API key';
+    el.setAttribute('onclick', "event.stopPropagation();openApiKeyModal(this)");
+  }
+
+  function modelTagsHtml(modelsText){
+    return (modelsText||'').split(',').map(m=>m.trim()).filter(Boolean)
+      .map(m=>`<span class="badge internal">${m}</span>`).join(', ');
+  }
+
+  function successCardHtml(name, owner, audience, modelsText, apiKey){
+    return `
+      <div class="success-card" style="padding:0;">
+        <h2 style="margin-top:0;">${name}</h2>
+        <div class="success-badge">✓ Registration Successful</div>
+        <p class="lede" style="margin-bottom:24px;">This agent has been approved and model access has been granted.</p>
+        <dl class="fact-grid" style="padding:0;">
+          <dt>Owner</dt><dd>${owner}</dd>
+          <dt>Intended Audience</dt><dd>${audience}</dd>
+          <dt>Granted Models</dt><dd>${modelTagsHtml(modelsText)}</dd>
+          <dt>Environment</dt><dd>Production</dd>
+        </dl>
+        <div class="cred-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <b style="font-size:14px;">Access Credentials</b>
+            <span class="tag-rbac">RBAC protected</span>
+          </div>
+          <label class="hint" style="display:block;margin-top:16px;">API Key</label>
+          <div class="cred-row">
+            <code id="regApiKeyDisplay" data-key="${apiKey}" data-revealed="0">abmb_live_••••••••••••••••••••</code>
+            <button class="btn-secondary" onclick="toggleKeyReveal(this)">Reveal Key</button>
+            <button class="btn-secondary" onclick="navigator.clipboard&&navigator.clipboard.writeText('${apiKey}')">Copy</button>
+          </div>
+          <p class="hint" style="margin-top:10px;">Hidden by default. Only users with the required RBAC role can reveal or copy this key.</p>
+        </div>
+        <div class="wizard-actions" style="margin-top:24px;">
+          <button class="btn-primary" onclick="closeApiKeyModal()">Done</button>
+        </div>
+      </div>`;
+  }
+
+  // Clicking "Check API Key" in the Status column -- shows once, then the row flips to Ready.
+  function openApiKeyModal(el){
+    const row = el.closest('tr');
+    window.__apiKeyRow = row;
+    document.getElementById('registerContent').innerHTML = successCardHtml(
+      row.querySelector('.agent-name').textContent,
+      row.dataset.owner, row.dataset.audience, row.dataset.models, row.dataset.apikey
+    );
+    document.getElementById('registerModal').classList.add('open');
+    document.body.classList.add('modal-open');
+  }
+  function closeApiKeyModal(){
+    const row = window.__apiKeyRow;
+    if(row){
+      const badge = row.querySelector('.badge.checkapikey');
+      if(badge){
+        badge.className = 'badge ready';
+        badge.textContent = 'Ready';
+        badge.removeAttribute('onclick');
+        badge.removeAttribute('title');
+      }
+      row.dataset.keyChecked = '1';
+      // Status is now Ready -- unlock the Stage column's Promote tag so the pipeline can start.
+      const stageBadge = row.querySelector('.badge.promote');
+      if(stageBadge){
+        stageBadge.removeAttribute('style');
+        stageBadge.title = 'Click to start the promotion pipeline';
+        stageBadge.setAttribute('onclick', 'event.stopPropagation();openPipelineModal(this)');
+      }
+      window.__apiKeyRow = null;
+    }
+    closeRegisterModal();
+  }
+
+  function toggleKeyReveal(btn){
+    const code = btn.previousElementSibling;
+    const revealed = code.dataset.revealed === '1';
+    if(revealed){
+      code.textContent = 'abmb_live_••••••••••••••••••••';
+      code.dataset.revealed = '0';
+      btn.textContent = 'Reveal Key';
+    } else {
+      code.textContent = code.dataset.key;
+      code.dataset.revealed = '1';
+      btn.textContent = 'Hide Key';
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Governed Onboarding</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="page">
+  <h1>Governed Onboarding</h1>
+  <p class="sub" style="max-width:640px;">Standardizing AI development &amp; secure model access. To safely scale AI, every asset — pro-code or citizen-built — must be registered. This automated workflow provisions secure, RBAC-protected API keys and model access while keeping the AI Control Tower fully informed.</p>
+
+  <div class="two-col" style="align-items:start;">
+    <div class="card wizard">
+      <h2 style="margin-top:0;">Register New Agent</h2>
+      <p class="hint">Provide key information about your agent to request access to models and begin the approval process.</p>
+
+      <div class="steps">
+        <div class="step active"><span class="circle">1</span><span class="label">Agent Details</span></div>
+        <div class="step-line"></div>
+        <div class="step"><span class="circle">2</span><span class="label">Model Access</span></div>
+        <div class="step-line"></div>
+        <div class="step"><span class="circle">3</span><span class="label">Additional Information</span></div>
+        <div class="step-line"></div>
+        <div class="step"><span class="circle">4</span><span class="label">Review &amp; Submit</span></div>
+      </div>
+
+      <fieldset>
+        <legend>1. Basic Information</legend>
+        <p class="hint">Tell us about your agent and its purpose.</p>
+        <div class="grid2">
+          <div><label class="f-label">Agent name *</label><input type="text" value="Document Extraction Agent"></div>
+          <div><label class="f-label">Short description *</label><input type="text" value="Extracts key information from uploaded documents such as invoices, forms, statements, and contracts, then returns structured outputs for downstream processing."></div>
+        </div>
+        <div class="grid2">
+          <div><label class="f-label">Owner / team *</label><input type="text" value="Operations Excellence"></div>
+          <div><label class="f-label">Department *</label><input type="text" value="Operations"></div>
+        </div>
+        <label class="f-label">Intended audience *</label>
+        <input type="text" value="Operations teams">
+        <p class="hint">Helps us determine the appropriate access and guardrails.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>2. Publication &amp; Access</legend>
+        <p class="hint">Control who can access your agent and how it will be used.</p>
+        <div class="grid2">
+          <div>
+            <label class="f-label">Visibility *</label>
+            <div class="radio-row">
+              <div class="radio">Personal</div>
+              <div class="radio selected">Team</div>
+              <div class="radio">To be published</div>
+            </div>
+          </div>
+          <div><label class="f-label">Expected user count (per month) *</label><input type="text" value="500 - 1,000"></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>3. Model Access</legend>
+        <p class="hint">Select the models you need access to.</p>
+        <div class="checks">
+          <div class="check">☐ GPT-4.1</div>
+          <div class="check checked">☑ Gemini 2.5 Pro</div>
+          <div class="check checked">☑ Gemini 2.5 Flash</div>
+          <div class="check">☐ Claude 3.5 Sonnet</div>
+          <div class="check">☐ Llama 3.1</div>
+          <div class="check">☐ Other (specify)</div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>4. Supporting Information</legend>
+        <p class="hint">Provide any additional details to help with the review process.</p>
+        <label class="f-label">Use case / business need *</label>
+        <textarea rows="3">Automates manual document processing by extracting fields such as customer name, document ID, invoice amount, dates, line items, and contract metadata. Reduces turnaround time, improves consistency, and supports high-volume back-office workflows.</textarea>
+      </fieldset>
+
+      <div class="wizard-actions">
+        <button class="btn-secondary">Cancel</button>
+        <button class="btn-primary">Next</button>
+      </div>
+    </div>
+
+    <div class="card success-card">
+      <h2 style="margin-top:0;">Document Extraction Agent</h2>
+      <div class="success-badge">✓ Registration Successful</div>
+      <p class="lede" style="margin-bottom:24px;">This agent has been approved and model access has been granted.</p>
+
+      <dl class="fact-grid" style="padding:0;">
+        <dt>Owner</dt><dd>Operations Excellence</dd>
+        <dt>Intended Audience</dt><dd>Operations teams</dd>
+        <dt>Granted Models</dt><dd>Gemini 2.5 Pro, Gemini 2.5 Flash</dd>
+        <dt>Environment</dt><dd>Production</dd>
+      </dl>
+
+      <div class="cred-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <b style="font-size:14px;">Access Credentials</b>
+          <span class="tag-rbac">RBAC protected</span>
+        </div>
+        <label class="hint" style="display:block;margin-top:16px;">API Key</label>
+        <div class="cred-row">
+          <code>abmb_live_••••••••••••••••••••</code>
+          <button class="btn-secondary">Reveal Key</button>
+          <button class="btn-secondary">Copy</button>
+        </div>
+        <p class="hint" style="margin-top:10px;">Hidden by default. Only users with the required RBAC role can reveal or copy this key.</p>
+      </div>
+
+      <dl class="fact-grid" style="padding:0;margin-top:20px;margin-bottom:0;">
+        <dt>Last rotated</dt><dd>23 Sep 2026, 10:14 SGT</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+</body>
+</html>
