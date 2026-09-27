@@ -35,6 +35,7 @@ class AgentCredential(Base):
     agent_id = Column(UUID(as_uuid=True), ForeignKey("agents.agent_id", ondelete="CASCADE"), nullable=False)
     registration_id = Column(UUID(as_uuid=True), ForeignKey("agent_registrations.registration_id"))
     api_key_hash = Column(Text, nullable=False)
+    api_key_ciphertext = Column(Text, nullable=False)   # NEW
     api_key_last4 = Column(Text, nullable=False)
     status = Column(CredentialStatus, nullable=False, default="active")
     authentication_mode = Column(Text, default="rbac_protected")
