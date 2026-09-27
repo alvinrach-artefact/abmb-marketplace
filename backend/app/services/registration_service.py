@@ -29,12 +29,12 @@ def submit_registration(db: Session, payload: RegistrationRequest) -> Registrati
     )
 
     registration = registration_crud.create_registration(
-        db, agent_id=agent.agent_id, raw_request=payload.model_dump()
+        db, agent_id=agent.agent_id, raw_request=payload.model_dump(mode="json")
     )
 
     registration_crud.write_audit_log(
         db, endpoint="/input-register", method="POST",
-        agent_id=agent.agent_id, actor=details.owner_team, payload=payload.model_dump(),
+        agent_id=agent.agent_id, actor=details.owner_team, payload=payload.model_dump(mode="json"),
     )
 
     db.commit()
@@ -73,11 +73,11 @@ def approve_registration(db: Session, payload: AccRegistrationRequest) -> AccReg
         registration_crud.set_registration_decision(
             db, registration=registration, status="rejected",
             reviewed_by=payload.reviewed_by, environment=payload.environment,
-            raw_response=payload.model_dump(),
+            raw_response=payload.model_dump(mode="json"),
         )
         registration_crud.write_audit_log(
             db, endpoint="/acc-registration", method="POST",
-            agent_id=registration.agent_id, actor=payload.reviewed_by, payload=payload.model_dump(),
+            agent_id=registration.agent_id, actor=payload.reviewed_by, payload=payload.model_dump(mode="json"),
         )
         db.commit()
         return AccRegistrationOut(
@@ -94,7 +94,7 @@ def approve_registration(db: Session, payload: AccRegistrationRequest) -> AccReg
     registration_crud.set_registration_decision(
         db, registration=registration, status="approved",
         reviewed_by=payload.reviewed_by, environment=payload.environment,
-        raw_response=payload.model_dump(),
+        raw_response=payload.model_dump(mode="json"),
     )
     registration_crud.add_model_access(
         db, agent_id=registration.agent_id, models=payload.granted_models, kind="granted"
@@ -105,7 +105,7 @@ def approve_registration(db: Session, payload: AccRegistrationRequest) -> AccReg
     )
     registration_crud.write_audit_log(
         db, endpoint="/acc-registration", method="POST",
-        agent_id=registration.agent_id, actor=payload.reviewed_by, payload=payload.model_dump(),
+        agent_id=registration.agent_id, actor=payload.reviewed_by, payload=payload.model_dump(mode="json"),
     )
 
     db.commit()
