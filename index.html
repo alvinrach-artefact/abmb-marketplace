@@ -267,6 +267,9 @@
 </div>
 
 <script>
+  // Point this at your deployed FastAPI backend. Requires CORS enabled server-side (see app/main.py).
+  const API_BASE = "https://abmb-marketplace-676268755067.asia-southeast1.run.app/api/v1";
+
   const STAGE_NAMES = ["Promote","POC / DEV","Testing","Pilot","Production"];
   const STAGE_TITLES = [null,
     "Stage 1: POC / DEV — Isolated Sandbox Build",
@@ -699,60 +702,141 @@ Expected output — what a complete, correct response looks like."></textarea>
     document.body.classList.remove('modal-open');
   }
 
-  // Register wizard "Next": registers the agent straight away as Pending.
-  // No API-key screen here anymore -- that now lives behind the Status column (see openApiKeyModal).
-  // Dummy granted models for the demo -- the real underlying models behind whichever
-  // capability aliases were requested (e.g. general-chat, reasoning-high, drafting...).
+  // Register wizard "Next" -> POST /input-register on the real backend.
+  // Actual granted models are chosen by the reviewer at approval time (see approvePending) --
+  // this constant is just what our demo "admin" always grants, kept for both display and the approval call.
   const DUMMY_GRANTED_MODELS = "Gemini 2.5 Pro, Claude 3.5 Sonnet";
 
-  function submitRegister(){
-    const name = document.getElementById('regName').value.trim() || 'Untitled Agent';
-    const desc = document.getElementById('regDesc').value.trim() || 'No description provided.';
-    const dept = document.getElementById('regDept').value || 'Unassigned';
-    const audience = document.getElementById('regAudience').value || 'Internal teams';
-    const owner = document.getElementById('regOwner').value || 'Unassigned';
-    const apiKey = 'abmb_live_' + Array.from({length:20},()=>Math.random().toString(36)[2]||'x').join('');
-    window.__regCounter = (window.__regCounter||0) + 1;
-    const agentId = 'reg' + window.__regCounter;
+  async function submitRegister(){
+    const name = document.getElementById('regName').value.trim();
+    const dept = document.getElementById('regDept').value;
+    const audience = document.getElementById('regAudience').value;
+    const owner = document.getElementById('regOwner').value;
+    const desc = document.getElementById('regDesc').value.trim();
+    const useCase = document.getElementById('regUseCase').value.trim();
 
-    const row = `<tr class="agent-row" onclick="openAgentModal(this)" data-registered="1" data-agent-id="${agentId}" data-owner="${owner}" data-audience="${audience}" data-dept="${dept}" data-models="${DUMMY_GRANTED_MODELS}" data-apikey="${apiKey}" data-key-checked="0">
-      <td class="agent-name">${name}</td>
-      <td class="desc">${desc}</td>
-      <td>${owner}</td><td>${audience}</td>
-      <td><span class="badge internal">Internal</span></td>
-      <td><span class="badge pending" onclick="event.stopPropagation();approvePending(this)" title="Click to simulate admin approval">Pending</span></td>
-      <td><span class="badge promote" style="opacity:.75;cursor:default;" title="Promotion pipeline not started">Promote</span></td>
-      <td>0</td>
-      <td><div class="row-actions" onclick="event.stopPropagation()"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
-    </tr>`;
-    document.getElementById('agentTableBody').insertAdjacentHTML('beforeend', row);
-    closeRegisterModal();
+    if(!name){ alert('Agent name is required.'); return; }
+    if(!dept || !audience || !owner){ alert('Please complete Department, Audience and Owner.'); return; }
+
+    const usersRaw = document.getElementById('regUsers').value.trim();
+    const usersMatch = usersRaw.match(/\d+/g);
+    const expectedUsers = usersMatch ? parseInt(usersMatch[usersMatch.length-1], 10) : 0;
+
+    const visibilityLabel = document.querySelector('#regVisibility .radio.selected').dataset.val;
+    const visibilityMap = {"Personal":"personal","Team":"team","To be published":"to_be_published"};
+    const models = Array.from(document.querySelectorAll('#regModels .check.checked')).map(c=>c.dataset.val);
+
+    const payload = {
+      agent_details: {
+        agent_name: name, department: dept, owner_team: owner,
+        intended_audience: audience, description: desc || null
+      },
+      publication_access: {
+        visibility: visibilityMap[visibilityLabel] || 'team',
+        expected_user_count_per_month: expectedUsers
+      },
+      model_access: models,
+      supporting_information: { use_case_business_need: useCase || null }
+    };
+
+    const submitBtn = document.querySelector('#registerContent .wizard-actions .btn-primary');
+    submitBtn.disabled = true; submitBtn.textContent = 'Submitting…';
+
+    try{
+      const res = await fetch(`${API_BASE}/input-register`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok){
+        const err = await res.json().catch(()=>({detail: res.statusText}));
+        throw new Error(err.detail || `HTTP ${res.status}`);
+      }
+      const data = await res.json(); // { registration_id, agent_id, status, submitted_at }
+
+      const row = `<tr class="agent-row" onclick="openAgentModal(this)" data-registered="1" data-agent-id="${data.agent_id}" data-registration-id="${data.registration_id}">
+        <td class="agent-name">${esc(name)}</td>
+        <td class="desc">${esc(desc || 'No description provided.')}</td>
+        <td>${esc(owner)}</td><td>${esc(audience)}</td>
+        <td><span class="badge internal">Internal</span></td>
+        <td><span class="badge pending" onclick="event.stopPropagation();approvePending(this)" title="Click to simulate admin approval">Pending</span></td>
+        <td><span class="badge promote" style="opacity:.75;cursor:default;" title="Promotion pipeline not started">Promote</span></td>
+        <td>0</td>
+        <td><div class="row-actions" onclick="event.stopPropagation()"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
+      </tr>`;
+      document.getElementById('agentTableBody').insertAdjacentHTML('beforeend', row);
+      closeRegisterModal();
+    } catch(err){
+      alert('Registration failed: ' + err.message);
+      submitBtn.disabled = false; submitBtn.textContent = 'Next';
+    }
   }
 
-  // Admin approval (simulated by clicking the Pending badge in this demo)
-  function approvePending(el){
-    el.className = 'badge checkapikey';
-    el.textContent = 'Check API Key';
-    el.title = 'Click to view your API key';
-    el.setAttribute('onclick', "event.stopPropagation();openApiKeyModal(this)");
+  // Admin approval (simulated by clicking the Pending badge in this demo) -> POST /acc-registration
+  async function approvePending(el){
+    const row = el.closest('tr');
+    const registrationId = row.dataset.registrationId;
+    const originalText = el.textContent;
+    el.textContent = 'Approving…';
+    el.style.pointerEvents = 'none';
+
+    try{
+      const res = await fetch(`${API_BASE}/acc-registration`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          registration_id: registrationId,
+          decision: 'approved',
+          reviewed_by: 'Alex Chen — Compliance Admin',
+          environment: 'production',
+          granted_models: DUMMY_GRANTED_MODELS.split(',').map(s=>s.trim())
+        })
+      });
+      if(!res.ok){
+        const err = await res.json().catch(()=>({detail: res.statusText}));
+        throw new Error(err.detail || `HTTP ${res.status}`);
+      }
+      el.className = 'badge checkapikey';
+      el.textContent = 'Check API Key';
+      el.title = 'Click to view your API key';
+      el.setAttribute('onclick', 'event.stopPropagation();openApiKeyModal(this)');
+      el.style.pointerEvents = '';
+    } catch(err){
+      el.textContent = originalText;
+      el.style.pointerEvents = '';
+      alert('Approval failed: ' + err.message);
+    }
   }
 
   function modelTagsHtml(modelsText){
     return (modelsText||'').split(',').map(m=>m.trim()).filter(Boolean)
-      .map(m=>`<span class="badge internal">${m}</span>`).join(', ');
+      .map(m=>`<span class="badge internal">${esc(m)}</span>`).join(', ');
   }
 
-  function successCardHtml(name, owner, audience, modelsText, apiKey){
+  function loadingCardHtml(){
+    return `<div class="success-card" style="padding:0;"><p class="lede">Loading credentials…</p></div>`;
+  }
+  function errorCardHtml(msg){
+    return `<div class="success-card" style="padding:0;">
+      <p class="lede" style="color:var(--red-tx);">${esc(msg)}</p>
+      <div class="wizard-actions" style="margin-top:20px;"><button class="btn-secondary" onclick="closeRegisterModal()">Close</button></div>
+    </div>`;
+  }
+
+  function successCardHtml(data, agentId){
+    const masked = (data.access_credentials && data.access_credentials.api_key && data.access_credentials.api_key.value)
+      || ('abmb_live_' + '•'.repeat(20));
+    const modelsText = (data.granted_models || []).join(', ');
     return `
       <div class="success-card" style="padding:0;">
-        <h2 style="margin-top:0;">${name}</h2>
-        <div class="success-badge">✓ Registration Successful</div>
+        <h2 style="margin-top:0;">${esc(data.agent_name)}</h2>
+        <div class="success-badge">✓ Registration ${esc(data.registration_status === 'approved' ? 'Successful' : data.registration_status)}</div>
         <p class="lede" style="margin-bottom:24px;">This agent has been approved and model access has been granted.</p>
         <dl class="fact-grid" style="padding:0;">
-          <dt>Owner</dt><dd>${owner}</dd>
-          <dt>Intended Audience</dt><dd>${audience}</dd>
+          <dt>Owner</dt><dd>${esc(data.owner)}</dd>
+          <dt>Intended Audience</dt><dd>${esc(data.intended_audience)}</dd>
           <dt>Granted Models</dt><dd>${modelTagsHtml(modelsText)}</dd>
-          <dt>Environment</dt><dd>Production</dd>
+          <dt>Environment</dt><dd>${esc(data.environment)}</dd>
         </dl>
         <div class="cred-box">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -761,9 +845,9 @@ Expected output — what a complete, correct response looks like."></textarea>
           </div>
           <label class="hint" style="display:block;margin-top:16px;">API Key</label>
           <div class="cred-row">
-            <code id="regApiKeyDisplay" data-key="${apiKey}" data-revealed="0">abmb_live_••••••••••••••••••••</code>
+            <code id="regApiKeyDisplay" data-agent-id="${agentId}" data-masked="${esc(masked)}" data-revealed="0">${esc(masked)}</code>
             <button class="btn-secondary" onclick="toggleKeyReveal(this)">Reveal Key</button>
-            <button class="btn-secondary" onclick="navigator.clipboard&&navigator.clipboard.writeText('${apiKey}')">Copy</button>
+            <button class="btn-secondary" onclick="copyKeyValue()">Copy</button>
           </div>
           <p class="hint" style="margin-top:10px;">Hidden by default. Only users with the required RBAC role can reveal or copy this key.</p>
         </div>
@@ -773,16 +857,27 @@ Expected output — what a complete, correct response looks like."></textarea>
       </div>`;
   }
 
-  // Clicking "Check API Key" in the Status column -- shows once, then the row flips to Ready.
-  function openApiKeyModal(el){
+  // Clicking "Check API Key" in the Status column -> GET /fetch-acc-registered-agent (masked)
+  async function openApiKeyModal(el){
     const row = el.closest('tr');
+    const agentId = row.dataset.agentId;
     window.__apiKeyRow = row;
-    document.getElementById('registerContent').innerHTML = successCardHtml(
-      row.querySelector('.agent-name').textContent,
-      row.dataset.owner, row.dataset.audience, row.dataset.models, row.dataset.apikey
-    );
+
+    document.getElementById('registerContent').innerHTML = loadingCardHtml();
     document.getElementById('registerModal').classList.add('open');
     document.body.classList.add('modal-open');
+
+    try{
+      const res = await fetch(`${API_BASE}/fetch-acc-registered-agent?agent_id=${agentId}&reveal=false`);
+      if(!res.ok){
+        const err = await res.json().catch(()=>({detail: res.statusText}));
+        throw new Error(err.detail || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      document.getElementById('registerContent').innerHTML = successCardHtml(data, agentId);
+    } catch(err){
+      document.getElementById('registerContent').innerHTML = errorCardHtml('Could not load credentials: ' + err.message);
+    }
   }
   function closeApiKeyModal(){
     const row = window.__apiKeyRow;
@@ -794,7 +889,6 @@ Expected output — what a complete, correct response looks like."></textarea>
         badge.removeAttribute('onclick');
         badge.removeAttribute('title');
       }
-      row.dataset.keyChecked = '1';
       // Status is now Ready -- unlock the Stage column's Promote tag so the pipeline can start.
       const stageBadge = row.querySelector('.badge.promote');
       if(stageBadge){
@@ -807,18 +901,49 @@ Expected output — what a complete, correct response looks like."></textarea>
     closeRegisterModal();
   }
 
-  function toggleKeyReveal(btn){
+  // Reveal/Copy -> GET /fetch-acc-registered-agent?reveal=true (fetched fresh, not cached client-side)
+  async function toggleKeyReveal(btn){
     const code = btn.previousElementSibling;
     const revealed = code.dataset.revealed === '1';
     if(revealed){
-      code.textContent = 'abmb_live_••••••••••••••••••••';
+      code.textContent = code.dataset.masked;
       code.dataset.revealed = '0';
       btn.textContent = 'Reveal Key';
-    } else {
+      return;
+    }
+    const agentId = code.dataset.agentId;
+    const originalText = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Revealing…';
+    try{
+      const res = await fetch(`${API_BASE}/fetch-acc-registered-agent?agent_id=${agentId}&reveal=true`);
+      if(!res.ok){
+        const err = await res.json().catch(()=>({detail: res.statusText}));
+        throw new Error(err.detail || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      code.dataset.key = data.access_credentials.api_key.value;
       code.textContent = code.dataset.key;
       code.dataset.revealed = '1';
       btn.textContent = 'Hide Key';
+    } catch(err){
+      alert('Could not reveal key: ' + err.message);
+      btn.textContent = originalText;
+    } finally {
+      btn.disabled = false;
     }
+  }
+
+  async function copyKeyValue(){
+    const code = document.getElementById('regApiKeyDisplay');
+    if(code.dataset.revealed !== '1'){
+      try{
+        const res = await fetch(`${API_BASE}/fetch-acc-registered-agent?agent_id=${code.dataset.agentId}&reveal=true`);
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        code.dataset.key = data.access_credentials.api_key.value;
+      } catch(err){ alert('Could not copy key: ' + err.message); return; }
+    }
+    navigator.clipboard && navigator.clipboard.writeText(code.dataset.key);
   }
 </script>
 </body>
