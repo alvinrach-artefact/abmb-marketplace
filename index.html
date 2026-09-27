@@ -703,9 +703,18 @@ Expected output — what a complete, correct response looks like."></textarea>
   }
 
   // Register wizard "Next" -> POST /input-register on the real backend.
-  // Actual granted models are chosen by the reviewer at approval time (see approvePending) --
-  // this constant is just what our demo "admin" always grants, kept for both display and the approval call.
-  const DUMMY_GRANTED_MODELS = "Gemini 2.5 Pro, Claude 3.5 Sonnet";
+  // Demo "admin" always grants a fixed concrete model per requested capability alias --
+  // a real Control Tower admin would pick these per-registration instead.
+  const CAPABILITY_MODEL_MAP = {
+    "general-chat": "Gemini 2.5 Flash",
+    "reasoning-high": "Claude Opus 4.5",
+    "drafting": "Claude Sonnet 5",
+    "classification": "Gemini 2.5 Pro",
+    "extraction": "Gemini 2.5 Pro",
+    "embedding": "text-embedding-3-large",
+    "voice": "Gemini 2.5 Flash (audio)",
+    "image": "DALL-E 3"
+  };
 
   async function submitRegister(){
     const name = document.getElementById('regName').value.trim();
@@ -714,9 +723,12 @@ Expected output — what a complete, correct response looks like."></textarea>
     const owner = document.getElementById('regOwner').value;
     const desc = document.getElementById('regDesc').value.trim();
     const useCase = document.getElementById('regUseCase').value.trim();
+    const models = Array.from(document.querySelectorAll('#regModels .check.checked')).map(c=>c.dataset.val);
 
     if(!name){ alert('Agent name is required.'); return; }
     if(!dept || !audience || !owner){ alert('Please complete Department, Audience and Owner.'); return; }
+    if(!desc){ alert('Short description is required.'); return; }
+    if(models.length === 0){ alert('Select at least one model capability under Model Access.'); return; }
 
     const usersRaw = document.getElementById('regUsers').value.trim();
     const usersMatch = usersRaw.match(/\d+/g);
@@ -724,12 +736,11 @@ Expected output — what a complete, correct response looks like."></textarea>
 
     const visibilityLabel = document.querySelector('#regVisibility .radio.selected').dataset.val;
     const visibilityMap = {"Personal":"personal","Team":"team","To be published":"to_be_published"};
-    const models = Array.from(document.querySelectorAll('#regModels .check.checked')).map(c=>c.dataset.val);
 
     const payload = {
       agent_details: {
         agent_name: name, department: dept, owner_team: owner,
-        intended_audience: audience, description: desc || null
+        intended_audience: audience, description: desc
       },
       publication_access: {
         visibility: visibilityMap[visibilityLabel] || 'team',
@@ -754,9 +765,9 @@ Expected output — what a complete, correct response looks like."></textarea>
       }
       const data = await res.json(); // { registration_id, agent_id, status, submitted_at }
 
-      const row = `<tr class="agent-row" onclick="openAgentModal(this)" data-registered="1" data-agent-id="${data.agent_id}" data-registration-id="${data.registration_id}">
+      const row = `<tr class="agent-row" onclick="openAgentModal(this)" data-registered="1" data-agent-id="${data.agent_id}" data-registration-id="${data.registration_id}" data-requested-models="${models.join(',')}">
         <td class="agent-name">${esc(name)}</td>
-        <td class="desc">${esc(desc || 'No description provided.')}</td>
+        <td class="desc">${esc(desc)}</td>
         <td>${esc(owner)}</td><td>${esc(audience)}</td>
         <td><span class="badge internal">Internal</span></td>
         <td><span class="badge pending" onclick="event.stopPropagation();approvePending(this)" title="Click to simulate admin approval">Pending</span></td>
@@ -773,9 +784,15 @@ Expected output — what a complete, correct response looks like."></textarea>
   }
 
   // Admin approval (simulated by clicking the Pending badge in this demo) -> POST /acc-registration
+  // Grants one concrete model per requested capability -- not a flat unlinked list.
   async function approvePending(el){
     const row = el.closest('tr');
     const registrationId = row.dataset.registrationId;
+    const requestedModels = (row.dataset.requestedModels || '').split(',').filter(Boolean);
+    const modelGrants = requestedModels.map(cap => ({
+      requested_capability: cap,
+      granted_model_name: CAPABILITY_MODEL_MAP[cap] || 'Gemini 2.5 Flash'
+    }));
     const originalText = el.textContent;
     el.textContent = 'Approving…';
     el.style.pointerEvents = 'none';
@@ -789,7 +806,7 @@ Expected output — what a complete, correct response looks like."></textarea>
           decision: 'approved',
           reviewed_by: 'Alex Chen — Compliance Admin',
           environment: 'production',
-          granted_models: DUMMY_GRANTED_MODELS.split(',').map(s=>s.trim())
+          model_grants: modelGrants
         })
       });
       if(!res.ok){
@@ -808,9 +825,13 @@ Expected output — what a complete, correct response looks like."></textarea>
     }
   }
 
-  function modelTagsHtml(modelsText){
-    return (modelsText||'').split(',').map(m=>m.trim()).filter(Boolean)
-      .map(m=>`<span class="badge internal">${esc(m)}</span>`).join(', ');
+  // Renders each capability -> granted model pairing explicitly, since they're no longer
+  // a flat unlinked list -- data.granted_models is [{requested_capability, granted_model_name}, ...]
+  function modelGrantsHtml(grants){
+    if(!grants || grants.length === 0) return '<span style="color:var(--muted);">None granted yet</span>';
+    return grants.map(g =>
+      `<span class="badge internal">${esc(g.requested_capability)} → ${esc(g.granted_model_name)}</span>`
+    ).join(' ');
   }
 
   function loadingCardHtml(){
@@ -826,7 +847,6 @@ Expected output — what a complete, correct response looks like."></textarea>
   function successCardHtml(data, agentId){
     const masked = (data.access_credentials && data.access_credentials.api_key && data.access_credentials.api_key.value)
       || ('abmb_live_' + '•'.repeat(20));
-    const modelsText = (data.granted_models || []).join(', ');
     return `
       <div class="success-card" style="padding:0;">
         <h2 style="margin-top:0;">${esc(data.agent_name)}</h2>
@@ -835,7 +855,7 @@ Expected output — what a complete, correct response looks like."></textarea>
         <dl class="fact-grid" style="padding:0;">
           <dt>Owner</dt><dd>${esc(data.owner)}</dd>
           <dt>Intended Audience</dt><dd>${esc(data.intended_audience)}</dd>
-          <dt>Granted Models</dt><dd>${modelTagsHtml(modelsText)}</dd>
+          <dt>Granted Models</dt><dd>${modelGrantsHtml(data.granted_models)}</dd>
           <dt>Environment</dt><dd>${esc(data.environment)}</dd>
         </dl>
         <div class="cred-box">

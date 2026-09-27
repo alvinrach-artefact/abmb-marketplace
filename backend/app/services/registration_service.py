@@ -7,7 +7,7 @@ from app.crud import registration as registration_crud
 from app.schemas.registration import (
     RegistrationRequest, RegistrationSubmittedOut, PendingRegistrationOut,
     AccRegistrationRequest, AccRegistrationOut, RegisteredAgentOut,
-    AccessCredentialsOut, ApiKeyOut, AgentDetails, PublicationAccess, SupportingInformation,
+    AccessCredentialsOut, ApiKeyOut, AgentDetails, PublicationAccess, SupportingInformation, ModelGrant
 )
 
 
@@ -24,8 +24,8 @@ def submit_registration(db: Session, payload: RegistrationRequest) -> Registrati
         use_case_business_need=payload.supporting_information.use_case_business_need,
     )
 
-    registration_crud.add_model_access(
-        db, agent_id=agent.agent_id, models=payload.model_access, kind="requested"
+    registration_crud.add_requested_capabilities(
+        db, agent_id=agent.agent_id, capabilities=payload.model_access
     )
 
     registration = registration_crud.create_registration(
@@ -96,9 +96,7 @@ def approve_registration(db: Session, payload: AccRegistrationRequest) -> AccReg
         reviewed_by=payload.reviewed_by, environment=payload.environment,
         raw_response=payload.model_dump(mode="json"),
     )
-    registration_crud.add_model_access(
-        db, agent_id=registration.agent_id, models=payload.granted_models, kind="granted"
-    )
+    registration_crud.set_model_grants(db, agent_id=registration.agent_id, grants=payload.model_grants)
     registration_crud.create_credential(
         db, agent_id=registration.agent_id, registration_id=registration.registration_id,
         api_key_hash=api_key_hash, api_key_ciphertext=api_key_ciphertext, api_key_last4=api_key_last4,
@@ -127,8 +125,11 @@ def fetch_registered_agent(db: Session, agent_id: uuid.UUID, reveal: bool = Fals
         raise ValueError("no registration found for this agent")
 
     credential = registration_crud.get_latest_credential(db, agent_id)
-    granted_models = registration_crud.get_granted_models(db, agent_id)
-
+    grants = registration_crud.get_model_grants(db, agent_id)
+    granted_models = [
+        ModelGrant(requested_capability=g.requested_capability, granted_model_name=g.granted_model_name)
+        for g in grants
+    ]
     api_key_out = ApiKeyOut(status="active")
     if credential:
         api_key_out.status = credential.status

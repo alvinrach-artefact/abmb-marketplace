@@ -59,12 +59,16 @@ class PendingRegistrationOut(BaseModel):
 
 # ---------- Control Tower -> DB: POST /acc-registration ----------
 
+class ModelGrant(BaseModel):
+    requested_capability: str
+    granted_model_name: str
+
 class AccRegistrationRequest(BaseModel):
     registration_id: uuid.UUID
     decision: Literal["approved", "rejected"]
     reviewed_by: str
     environment: Optional[str] = "production"
-    granted_models: List[str] = Field(default_factory=list)
+    model_grants: List[ModelGrant] = Field(default_factory=list)   # was: granted_models: List[str]
 
 
 class ApiKeyOut(BaseModel):
@@ -93,6 +97,6 @@ class RegisteredAgentOut(BaseModel):
     registration_status: str
     owner: str
     intended_audience: str
-    granted_models: List[str]
+    granted_models: List[ModelGrant]   # was: List[str]
     environment: str
     access_credentials: AccessCredentialsOut

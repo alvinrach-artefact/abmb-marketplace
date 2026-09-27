@@ -44,8 +44,8 @@ class AgentModelAccess(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     agent_id = Column(UUID(as_uuid=True), ForeignKey("agents.agent_id", ondelete="CASCADE"), nullable=False)
-    model_name = Column(Text, nullable=False)
-    kind = Column(ModelAccessKind, nullable=False)
+    requested_capability = Column(Text, nullable=False)   # e.g. "general-chat", "drafting", "image"
+    granted_model_name = Column(Text, nullable=True)      # e.g. "Claude Opus 4.5" -- set at approval, not before
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
     agent = relationship("Agent", back_populates="model_access")

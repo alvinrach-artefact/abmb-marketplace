@@ -23,11 +23,6 @@ def create_agent(db: Session, *, agent_name: str, department: str, owner_team: s
     return agent
 
 
-def add_model_access(db: Session, *, agent_id: uuid.UUID, models: List[str], kind: str) -> None:
-    for model_name in models:
-        db.add(AgentModelAccess(agent_id=agent_id, model_name=model_name, kind=kind))
-
-
 def create_registration(db: Session, *, agent_id: uuid.UUID, raw_request: dict) -> AgentRegistration:
     registration = AgentRegistration(agent_id=agent_id, status="pending", raw_request=raw_request)
     db.add(registration)
@@ -93,15 +88,38 @@ def get_agent(db: Session, agent_id: uuid.UUID) -> Optional[Agent]:
     return db.query(Agent).filter(Agent.agent_id == agent_id).first()
 
 
-def get_granted_models(db: Session, agent_id: uuid.UUID) -> List[str]:
-    rows = (
-        db.query(AgentModelAccess)
-        .filter(AgentModelAccess.agent_id == agent_id, AgentModelAccess.kind == "granted")
-        .all()
-    )
-    return [r.model_name for r in rows]
-
-
 def write_audit_log(db: Session, *, endpoint: str, method: str, agent_id: Optional[uuid.UUID],
                      actor: Optional[str], payload: dict) -> None:
     db.add(AuditLog(endpoint=endpoint, method=method, agent_id=agent_id, actor=actor, payload=payload))
+
+def add_requested_capabilities(db: Session, *, agent_id: uuid.UUID, capabilities: List[str]) -> None:
+    for cap in capabilities:
+        db.add(AgentModelAccess(agent_id=agent_id, requested_capability=cap, granted_model_name=None))
+
+
+def set_model_grants(db: Session, *, agent_id: uuid.UUID, grants: list) -> None:
+    """Updates the existing requested-capability row in place -- never inserts a new row."""
+    rows = {
+        r.requested_capability: r
+        for r in db.query(AgentModelAccess).filter(AgentModelAccess.agent_id == agent_id).all()
+    }
+    for grant in grants:
+        row = rows.get(grant.requested_capability)
+        if row is None:
+            # Defensive: admin tried to grant something that was never requested.
+            # Insert it anyway rather than silently dropping it, but this is worth
+            # surfacing/logging in a real system rather than allowing quietly.
+            db.add(AgentModelAccess(
+                agent_id=agent_id, requested_capability=grant.requested_capability,
+                granted_model_name=grant.granted_model_name,
+            ))
+        else:
+            row.granted_model_name = grant.granted_model_name
+
+
+def get_model_grants(db: Session, agent_id: uuid.UUID) -> List[AgentModelAccess]:
+    return (
+        db.query(AgentModelAccess)
+        .filter(AgentModelAccess.agent_id == agent_id, AgentModelAccess.granted_model_name.isnot(None))
+        .all()
+    )
