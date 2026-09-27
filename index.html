@@ -27,7 +27,7 @@
         </tr>
       </thead>
       <tbody id="agentTableBody">
-        <tr class="agent-row">
+        <tr class="agent-row" onclick="openAgentModal(this)">
           <td class="agent-name">Finance Analytics</td>
           <td class="desc">Answers questions on unsecured SME default and delinquency rates by sector, and exposure against the single-obligor ceiling.</td>
           <td>Finance Analytics</td><td>Finance</td>
@@ -35,9 +35,9 @@
           <td><span class="badge live">Live</span></td>
           <td><span class="badge stage" onclick="event.stopPropagation();openProductionModal(this)">Production</span></td>
           <td>128</td>
-          <td><div class="row-actions"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
+          <td><div class="row-actions" onclick="event.stopPropagation()"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
         </tr>
-        <tr class="agent-row">
+        <tr class="agent-row" onclick="openAgentModal(this)">
           <td class="agent-name">HR Analytics</td>
           <td class="desc">Provides headcount, attrition, leave and hiring trends from governed HR data marts.</td>
           <td>HR CoE</td><td>HR</td>
@@ -45,9 +45,9 @@
           <td><span class="badge live">Live</span></td>
           <td><span class="badge stage" onclick="event.stopPropagation();openProductionModal(this)">Production</span></td>
           <td>74</td>
-          <td><div class="row-actions"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
+          <td><div class="row-actions" onclick="event.stopPropagation()"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
         </tr>
-        <tr class="agent-row">
+        <tr class="agent-row" onclick="openAgentModal(this)">
           <td class="agent-name">Market Outlook</td>
           <td class="desc">Delivers the Malaysian SME credit outlook by sector for the next two quarters.</td>
           <td>Economics &amp; Research</td><td>Finance</td>
@@ -55,9 +55,9 @@
           <td><span class="badge live">Live</span></td>
           <td><span class="badge stage" onclick="event.stopPropagation();openProductionModal(this)">Production</span></td>
           <td>212</td>
-          <td><div class="row-actions"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
+          <td><div class="row-actions" onclick="event.stopPropagation()"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
         </tr>
-        <tr class="agent-row">
+        <tr class="agent-row" onclick="openAgentModal(this)">
           <td class="agent-name">Credit Policy</td>
           <td class="desc">Returns the current approved unsecured SME credit parameters: ceiling, portfolio assumption, concentration threshold and sub-ceiling.</td>
           <td>Credit Risk</td><td>Finance</td>
@@ -65,9 +65,9 @@
           <td><span class="badge live">Live</span></td>
           <td><span class="badge stage" onclick="event.stopPropagation();openProductionModal(this)">Production</span></td>
           <td>163</td>
-          <td><div class="row-actions"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
+          <td><div class="row-actions" onclick="event.stopPropagation()"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
         </tr>
-        <tr class="agent-row">
+        <tr class="agent-row" onclick="openAgentModal(this)">
           <td class="agent-name">Policy Library</td>
           <td class="desc">Searches the policies and SOPs a user is cleared to read for their question.</td>
           <td>Group Policy Office</td><td>HR</td>
@@ -75,9 +75,9 @@
           <td><span class="badge live">Live</span></td>
           <td><span class="badge stage" onclick="event.stopPropagation();openProductionModal(this)">Production</span></td>
           <td>340</td>
-          <td><div class="row-actions"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
+          <td><div class="row-actions" onclick="event.stopPropagation()"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
         </tr>
-        <tr class="agent-row spotlight" onclick="openAgentModal()">
+        <tr class="agent-row spotlight" onclick="openAgentModal(this)">
           <td class="agent-name">Agent Kevin</td>
           <td class="desc">SME RM workbench for case preparation, credit readiness and draft memo support.</td>
           <td>SME Banking</td><td>Relationship Managers</td>
@@ -85,10 +85,10 @@
           <td><span class="badge ready">Ready</span></td>
           <td><span class="badge promote" id="kevinStageBadge" onclick="event.stopPropagation();openPipelineModal()">Promote</span></td>
           <td>54</td>
-          <td><div class="row-actions">
-            <button class="btn-secondary" onclick="event.stopPropagation()">Ask owner</button>
-            <button class="btn-secondary" onclick="event.stopPropagation();openAgentModal()">Try agent</button>
-            <button class="btn-secondary" onclick="event.stopPropagation()">Request access</button>
+          <td><div class="row-actions" onclick="event.stopPropagation()">
+            <button class="btn-secondary">Ask owner</button>
+            <button class="btn-secondary" onclick="openAgentModal(this.closest('tr'))">Try agent</button>
+            <button class="btn-secondary">Request access</button>
           </div></td>
         </tr>
       </tbody>
@@ -102,15 +102,16 @@
   <div class="modal-panel">
     <button class="modal-close" onclick="closeAgentModal()">×</button>
 
-    <div class="detail-header"><h1>Agent Kevin</h1></div>
+    <div class="detail-header"><h1 id="amName">Agent Kevin</h1></div>
     <div class="meta-row">
-      <span><b>Owner:</b> SME Banking</span>
-      <span><b>Audience:</b> Relationship Managers</span>
-      <span><b>Classification:</b> <span class="badge confidential">Confidential</span></span>
-      <span><b>Status:</b> <span class="badge ready">Ready</span></span>
+      <span><b>Owner:</b> <span id="amOwner"></span></span>
+      <span><b>Audience:</b> <span id="amAudience"></span></span>
+      <span><b>Classification:</b> <span id="amClass"></span></span>
+      <span><b>Status:</b> <span id="amStatus"></span></span>
     </div>
-    <p class="lede">Agent Kevin helps SME relationship managers with case preparation, credit readiness, and draft memo support. It brings together relevant data, guidelines and templates to accelerate high-quality SME credit discussions and documentation.</p>
+    <p class="lede" id="amDesc"></p>
 
+    <div id="amExtra">
     <dl class="fact-grid card">
       <dt>Purpose</dt><dd>Support SME credit analysis and relationship management, including case preparation, credit readiness assessment, and generation of draft memos.</dd>
       <dt>Primary Users</dt><dd>SME Relationship Managers</dd>
@@ -236,6 +237,7 @@
         </div>
       </div>
 
+    </div>
     </div>
   </div>
 </div>
@@ -515,7 +517,26 @@
     window.__pendingAgent = null;
   }
 
-  function openAgentModal(){
+  const KEVIN_LEDE = "Agent Kevin helps SME relationship managers with case preparation, credit readiness, and draft memo support. It brings together relevant data, guidelines and templates to accelerate high-quality SME credit discussions and documentation.";
+
+  function openAgentModal(row){
+    const name = row.querySelector('.agent-name').textContent.trim();
+    const owner = row.children[2].textContent.trim();
+    const audience = row.children[3].textContent.trim();
+    const classHtml = row.children[4].innerHTML;
+    const statusHtml = row.children[5].innerHTML;
+    const desc = row.querySelector('.desc').textContent.trim();
+    const isKevin = name === 'Agent Kevin';
+
+    document.getElementById('amName').textContent = name;
+    document.getElementById('amOwner').textContent = owner;
+    document.getElementById('amAudience').textContent = audience;
+    document.getElementById('amClass').innerHTML = classHtml;
+    document.getElementById('amStatus').innerHTML = statusHtml;
+    document.getElementById('amDesc').textContent = isKevin ? KEVIN_LEDE : desc;
+    document.getElementById('amExtra').style.display = isKevin ? '' : 'none';
+    if(isKevin) showEntTab('overview');
+
     document.getElementById('agentModal').classList.add('open');
     document.body.classList.add('modal-open');
   }
@@ -694,7 +715,7 @@ Expected output — what a complete, correct response looks like."></textarea>
     window.__regCounter = (window.__regCounter||0) + 1;
     const agentId = 'reg' + window.__regCounter;
 
-    const row = `<tr class="agent-row" data-registered="1" data-agent-id="${agentId}" data-owner="${owner}" data-audience="${audience}" data-dept="${dept}" data-models="${DUMMY_GRANTED_MODELS}" data-apikey="${apiKey}" data-key-checked="0">
+    const row = `<tr class="agent-row" onclick="openAgentModal(this)" data-registered="1" data-agent-id="${agentId}" data-owner="${owner}" data-audience="${audience}" data-dept="${dept}" data-models="${DUMMY_GRANTED_MODELS}" data-apikey="${apiKey}" data-key-checked="0">
       <td class="agent-name">${name}</td>
       <td class="desc">${desc}</td>
       <td>${owner}</td><td>${audience}</td>
@@ -702,7 +723,7 @@ Expected output — what a complete, correct response looks like."></textarea>
       <td><span class="badge pending" onclick="event.stopPropagation();approvePending(this)" title="Click to simulate admin approval">Pending</span></td>
       <td><span class="badge promote" style="opacity:.75;cursor:default;" title="Promotion pipeline not started">Promote</span></td>
       <td>0</td>
-      <td><div class="row-actions"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
+      <td><div class="row-actions" onclick="event.stopPropagation()"><button class="btn-secondary">Ask owner</button><button class="btn-secondary">Try agent</button><button class="btn-secondary">Request access</button></div></td>
     </tr>`;
     document.getElementById('agentTableBody').insertAdjacentHTML('beforeend', row);
     closeRegisterModal();
