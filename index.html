@@ -314,7 +314,7 @@
       panel2:{title:"Compliance sign-off",sub:"Required approval to promote Agent Kevin to production.",kv:[["Approver","Alex Chen — Head of Financial Crime Compliance"],["Approval rule","Mandatory final sign-off required"],["Evidence pack","Pilot telemetry, HITL escalation log, risk/fairness review, security evidence"],["Promotion gate","Blocked until sign-off"],["Decision status","Ready for sign-off"],["Upon approval","Publish to PRODUCTION"]],rows:[["Retained evidence complete","Complete"],["Final review package attached","Complete"],["Compliance approver assigned","Complete"]]},
       panel3:{title:"Go-live result",sub:"Once compliance signs off, the following will be activated.",rows:[["Marketplace Registry status","Active"],["Unified Chat access","Available to authorized SME RMs"],["Telemetry streaming","FinOps & Security to BigQuery"],["Monitoring","Continuous monitoring enabled"],["Production environment","Provisioned"]]},
       nextDesc:"Final compliance sign-off is required before Agent Kevin can be promoted. Once approved, the agent will become Active in the Marketplace Registry and available to authorized users in Unified Chat.",
-      primary:"Compliance Sign Off & Publish", secondary:"Save Draft"
+      primary:"Production Request", secondary:"Save Draft"
     }
   };
 
@@ -324,8 +324,8 @@
   function setComplete(id){ localStorage.setItem('pcomplete_'+id, '1'); }
 
   function pillClass(status){
-    if(status==="Not allowed") return "no";
-    if(status==="Ready") return "pending";
+    if(status==="Not allowed" || status==="Incomplete") return "no";
+    if(status==="Ready" || status==="Pending publish") return "pending";
     return "ok";
   }
   function renderRows(rows){
@@ -343,6 +343,19 @@
   let pipeAgentId = 'kevin';
   let pipeBadgeEl = null;
   const esc = t => String(t).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  // ---- Final gate (Production Request -> Waiting -> Publish) is backed by the publication endpoints ----
+  // Agent Kevin is a hardcoded row, so he uses a seeded UUID (see sql/seed_agent_kevin.sql).
+  const KEVIN_AGENT_ID = "11111111-1111-4111-8111-111111111111";
+  let pubState = null;   // last /fetch-acc-public-agent response for the open modal (null = still loading)
+
+  const backendAgentId = () => pipeMode==='kevin' ? KEVIN_AGENT_ID : pipeAgentId;
+  const humanize = s => esc(String(s).replaceAll('_',' ').replace(/^./, c=>c.toUpperCase())
+    .replace(/hitl/i,'HITL').replace(/finops/i,'FinOps').replace(/bigquery/i,'BigQuery'));
+  async function apiError(res){
+    const e = await res.json().catch(()=>({}));
+    return typeof e.detail === 'string' ? e.detail : (e.detail ? JSON.stringify(e.detail) : `HTTP ${res.status}`);
+  }
   const TIER_BY_CLASS = {Confidential:"Tier 3 – High Risk", Restricted:"Tier 2 – Medium Risk", Internal:"Tier 1 – Low Risk"};
   const GCP = "GCP — Cloud Run (asia-southeast1)", AZ = "Azure — Linux Function Apps (southeastasia)";
   const HOSTING = {
@@ -362,7 +375,9 @@
   function renderPipeline(view){
     const data = PIPELINE[view];
     const name = pipeCtx ? pipeCtx.name : 'Agent Kevin';
-    const complete = pipeMode==='production' ? true : (view===4 && getComplete(pipeAgentId));
+    const live = view===4 && pipeMode!=='production';               // final gate is API-backed
+    const st = live && pubState ? pubState.publication_status : null; // null while loading
+    const complete = pipeMode==='production' ? true : (view===4 && (getComplete(pipeAgentId) || st==='published'));
     const fix = t => String(t).replaceAll('Agent Kevin', name);
 
     document.getElementById('pipeTitle').textContent = 'Promotion Pipeline — ' + name;
@@ -398,9 +413,22 @@
     const ovRows = Object.entries(ov).map(([k,v])=>`<div class="kv-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
     const col1 = `<div class="pipe-card"><div class="pipe-head"><h3>Agent overview</h3><button class="btn-secondary" style="padding:5px 10px;font-size:12px;">Edit</button></div><p class="pipe-sub">Key details for ${esc(name)} at this stage.</p>${ovRows}</div>`;
 
-    // panel2 (once published, the sign-off is shown as granted)
+    // panel2 -- at the final gate this comes from the API once compliance has acted
     let p2 = data.panel2;
-    if(complete && view===4){
+    const cs = live && pubState ? pubState.compliance_sign_off : null;
+    const gl = live && pubState ? pubState.go_live_result : null;
+    if(cs){
+      p2 = {...p2, sub:`Compliance sign-off recorded for ${esc(name)}.`,
+        kv:[["Approver", `${esc(cs.approver.name)} — ${esc(cs.approver.role)}`],
+            ["Approval rule", humanize(cs.approval_rule)],
+            ["Evidence pack", cs.evidence_pack.map(e=>humanize(e)).join(', ')],
+            ["Promotion gate", humanize(cs.promotion_gate)],
+            ["Decision status", humanize(cs.decision_status)],
+            ["Upon approval", humanize(cs.upon_approval)]],
+        rows:[["Retained evidence complete", cs.retained_evidence_complete ? "Complete" : "Incomplete"],
+              ["Final review package attached", cs.final_review_package_attached ? "Complete" : "Incomplete"],
+              ["Compliance approver assigned", cs.compliance_approver_assigned ? "Complete" : "Incomplete"]]};
+    } else if(complete && view===4){
       const granted = {"Promotion gate":"Cleared","Decision status":"Approved","Upon approval":"Published to PRODUCTION"};
       p2 = {...p2, sub:`Compliance approval granted for ${esc(name)} to run in production.`,
             kv:p2.kv.map(([k,v])=>[k, granted[k]||v])};
@@ -409,7 +437,15 @@
 
     // panel3
     let p3 = data.panel3;
-    if(complete && view===4){
+    if(gl){
+      p3 = {...p3, sub: st==='published' ? "Compliance has signed off; the following are now active."
+                                         : "Compliance has signed off; these are activated when you publish.",
+        rows:[["Marketplace Registry status", humanize(gl.marketplace_registry_status)],
+              ["Unified Chat access", humanize(gl.unified_chat_access)],
+              ["Telemetry streaming", humanize(gl.telemetry_streaming)],
+              ["Monitoring", humanize(gl.monitoring)],
+              ["Production environment", humanize(gl.production_environment)]]};
+    } else if(complete && view===4){
       p3 = {...p3, sub:"Compliance has signed off; the following are now active.",
             rows:p3.rows.map(([k,v])=>[k, (pipeCtx && v==="Available to authorized SME RMs") ? "Available to authorized users" : v])};
     }
@@ -417,15 +453,31 @@
 
     document.getElementById('pipeGrid').innerHTML = col1+col2+col3;
 
-    const nextText = complete
-      ? (pipeMode!=='kevin' ? `${esc(name)} is live in production and available to all authorized users.` : 'Agent Kevin is live in production and available to all authorized SME Relationship Managers.')
-      : fix(data.nextDesc);
+    let nextText, primaryHtml = '';
+    if(complete){
+      // already published: no primary button any more
+      nextText = pipeMode!=='kevin' ? `${esc(name)} is live in production and available to all authorized users.` : 'Agent Kevin is live in production and available to all authorized SME Relationship Managers.';
+    } else if(live){
+      const states = {
+        not_requested:{t:fix(data.nextDesc), label:'Production Request', act:'requestPublication()'},
+        rejected:{t:'Compliance rejected the previous production request. You can submit a new request.', label:'Production Request', act:'requestPublication()'},
+        pending:{t:'Production request sent to the AI Control Tower. Waiting for admin approval — reopen this box once it is approved.', label:'Waiting', off:true},
+        approved:{t:'Compliance has approved this request. Click Publish to go live.', label:'Publish', act:'publishAgent()'},
+        error:{t:'Could not reach the server: ' + esc(pubState && pubState.error || ''), label:'Retry', act:'retryPublicationState()'}
+      };
+      const c = st ? (states[st] || states.not_requested) : {t:'Checking publication status…', label:'Checking…', off:true};
+      nextText = c.t;
+      primaryHtml = `<button id="pipePrimaryBtn" class="btn-primary" ${c.off?'disabled style="background:#b9bdd0;cursor:not-allowed;"':''} ${c.act?`onclick="${c.act}"`:''}>${c.label}</button>`;
+    } else {
+      nextText = fix(data.nextDesc);
+      primaryHtml = `<button class="btn-primary" onclick="advanceStage(${view})">${data.primary}</button>`;
+    }
     document.getElementById('pipeNext').innerHTML = `
       <div class="pipe-head"><h3>Next step</h3></div>
       <p class="pipe-next-desc">${nextText}</p>
       <div class="pipe-actions">
         <button class="btn-secondary" onclick="closePipelineModal()">${complete?'Close':data.secondary}</button>
-        <button class="btn-primary" ${complete?'disabled style="opacity:.5;cursor:default;"':''} onclick="advanceStage(${view})">${complete?'Published':data.primary}</button>
+        ${primaryHtml}
       </div>`;
   }
 
@@ -459,7 +511,10 @@
         src: (HOSTING[name]||{}).src || ""
       };
     }
-    renderPipeline(currentView(pipeAgentId));
+    pubState = null;
+    const v = currentView(pipeAgentId);
+    renderPipeline(v);
+    if(v===4) loadPublicationState();
     document.getElementById('pipelineModal').classList.add('open');
     document.body.classList.add('modal-open');
   }
@@ -485,17 +540,80 @@
     document.getElementById('pipelineModal').classList.remove('open');
     document.body.classList.remove('modal-open');
   }
+  // Stages 1-3 are frontend-only. Stage 4 is handled by requestPublication() / publishAgent().
   function advanceStage(view){
-    if(view===4){
-      setStage(pipeAgentId, 4);
-      setComplete(pipeAgentId);
-      renderPipeline(4);
-      updateStageBadge();
-      return;
-    }
     setStage(pipeAgentId, view);
-    renderPipeline(view+1);
     updateStageBadge();
+    pubState = null;
+    renderPipeline(view+1);
+    if(view+1===4) loadPublicationState();
+  }
+
+  // GET /fetch-acc-public-agent -> decides which button the final gate shows
+  async function loadPublicationState(){
+    const id = pipeAgentId;
+    try{
+      const res = await fetch(`${API_BASE}/fetch-acc-public-agent?agent_id=${backendAgentId()}`);
+      if(!res.ok) throw new Error(await apiError(res));
+      const data = await res.json();
+      if(id !== pipeAgentId) return;            // user switched to another agent meanwhile
+      pubState = data;
+      if(data.publication_status==='published' && !getComplete(id)){
+        setStage(id, 4); setComplete(id); updateStageBadge();
+      }
+    } catch(err){
+      if(id !== pipeAgentId) return;
+      pubState = {publication_status:'error', error: err.message};
+    }
+    renderPipeline(4);
+  }
+  function retryPublicationState(){ pubState = null; renderPipeline(4); loadPublicationState(); }
+
+  function publicationPayload(){
+    const ctx = pipeMode==='kevin'
+      ? {name:'Agent Kevin', owner:'SME Banking', audience:'SME Relationship Managers',
+         classification:'Confidential', tier:'Tier 3 – High Risk', desc:'SME credit analysis and customer insights'}
+      : pipeCtx;
+    return {
+      agent_id: backendAgentId(), name: ctx.name, owner: ctx.owner, audience: ctx.audience,
+      classification: ctx.classification, tier: ctx.tier,
+      environment: stageEnvFor(3, ctx),                       // environment at the time of the request (pilot)
+      current_stage: STAGE_NAMES[getStage(pipeAgentId)] || 'Pilot',
+      use_case: ctx.desc
+    };
+  }
+
+  // Production Request -> POST /request-publication, then the button turns into a greyed "Waiting"
+  async function requestPublication(){
+    const btn = document.getElementById('pipePrimaryBtn');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try{
+      const res = await fetch(`${API_BASE}/request-publication`, {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(publicationPayload())
+      });
+      if(!res.ok) throw new Error(await apiError(res));
+      await loadPublicationState();
+    } catch(err){
+      alert('Production request failed: ' + err.message);
+      btn.disabled = false; btn.textContent = 'Production Request';
+    }
+  }
+
+  // Publish -> POST /publish-agent, tag becomes Production, back to the table
+  async function publishAgent(){
+    const btn = document.getElementById('pipePrimaryBtn');
+    btn.disabled = true; btn.textContent = 'Publishing…';
+    try{
+      const res = await fetch(`${API_BASE}/publish-agent`, {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({agent_id: backendAgentId()})
+      });
+      if(!res.ok) throw new Error(await apiError(res));
+      setStage(pipeAgentId, 4); setComplete(pipeAgentId); updateStageBadge();
+      closePipelineModal();
+    } catch(err){
+      alert('Publish failed: ' + err.message);
+      btn.disabled = false; btn.textContent = 'Publish';
+    }
   }
   function updateStageBadge(){
     if(!pipeBadgeEl) return;
@@ -514,6 +632,7 @@
     localStorage.removeItem('pstage_kevin');
     localStorage.removeItem('pcomplete_kevin');
     pipeMode='kevin'; pipeAgentId='kevin'; pipeBadgeEl = document.getElementById('kevinStageBadge');
+    pubState = null;
     updateStageBadge();
     // remove every agent created through + Register Agent
     document.querySelectorAll('#agentTableBody tr[data-registered="1"]').forEach(r=>r.remove());
